@@ -1,0 +1,43 @@
+{
+  "repeticoes": 10,
+  "tamanho_minimo_segundos": 20,
+  "fator_entre_tamanhos": 1.6,
+
+  "benchmarks": {
+    "matrizes": {
+      "arquivo": "matrizes.py",
+      "expoente_custo": 3,
+      "tamanhos": [400, 640, 1024]
+    },
+    "palavras": {
+      "arquivo": "palavras.py",
+      "expoente_custo": 1,
+      "tamanhos": [50000000, 80000000, 128000000]
+    }
+  },
+
+  "ofuscadores": {
+    "original": {
+      "descricao": "Baseline sem ofuscação (src/)",
+      "diretorio": "src"
+    },
+
+    "minifier-renomear": {
+      "descricao": "python-minifier: remove comentários/docstrings e renomeia identificadores",
+      "modo": "arquivo",
+      "cmd": ["pyminify", "--rename-globals", "--output", "{saida}", "{entrada}"]
+    },
+
+    "pyarmor-basico": {
+      "descricao": "PyArmor com opções padrão",
+      "modo": "diretorio",
+      "cmd": ["pyarmor", "gen", "-O", "{saida}", "{entradas}"]
+    },
+
+    "pyarmor-forte": {
+      "descricao": "PyArmor com ofuscação de strings, código e módulo",
+      "modo": "diretorio",
+      "cmd": ["pyarmor", "gen", "--obf-module", "1", "--obf-code", "2", "--mix-str", "-O", "{saida}", "{entradas}"]
+    }
+  }
+}

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Cache/licença local do PyArmor (o código ofuscado em ofuscado/ É versionado)
+.pyarmor/
+.pyarmor_capsule*
+
+# Temporários
+build/
+dist/
+*.tmp
+*.log
+resultados/*.partial.csv
+
+# Editores / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Material da disciplina (não versionar PDFs de slides)
+*.pdf

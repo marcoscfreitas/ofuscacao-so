@@ -1,0 +1,6 @@
+# Ofuscadores
+pyarmor
+python-minifier
+
+# Análise / gráficos
+matplotlib
