@@ -4,3 +4,6 @@ python-minifier
 
 # Análise / gráficos
 matplotlib
+
+# Informações do sistema (RAM, bateria, núcleos)
+psutil
