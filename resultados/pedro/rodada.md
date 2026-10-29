@@ -8,3 +8,6 @@
 - Estatísticas: tabelas.md; gráficos: graficos/matrizes.png e graficos/palavras.png.
 - Condições de medição confirmadas pelo participante antes do início.
 - Dificuldades e limitações metodológicas: preparacao.md.
+- As 240 execuções válidas referem-se à correção das saídas e completude. O requisito
+  de 20 s não foi atendido em palavras; esta rodada não está integralmente conforme
+  o enunciado. A repetição preparada em outro perfil ainda não foi iniciada.

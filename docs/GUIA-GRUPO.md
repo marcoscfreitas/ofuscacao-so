@@ -4,6 +4,10 @@ Este guia explica **como os 3 integrantes medem, cada um na
 própria máquina, e juntam os resultados**. Serve para pessoas e para assistentes
 de IA que estejam ajudando. Leia inteiro antes de rodar qualquer coisa.
 
+Leia também os [achados e decisões entre máquinas](DECISOES-EXPERIMENTO.md).
+Eles registram uma pendência real dos 20 s e explicam por que um perfil de CPU
+ou tamanho testado em um computador não deve ser copiado automaticamente.
+
 ## 1. Ideia geral
 
 - O trabalho mede o custo de tempo da ofuscação de código Python (veja o
@@ -77,7 +81,18 @@ O `verificar.py` é a **checagem pré-voo**. Ele não altera nada e informa:
 3. se o menor tamanho de `matrizes` deve levar ≥ 20 s no código original;
 4. uma estimativa da duração da rodada completa.
 
-**Só prossiga quando terminar com `RESULTADO: tudo certo`.**
+**“Tudo certo” é necessário, mas não suficiente.** Leia os avisos: o verificador
+atual não checa 20 s em palavras e pode aprovar com um aviso de matrizes abaixo
+do alvo. Ele também usa uma estimativa de consumo de RAM.
+
+Antes da rodada, execute as menores entradas reais dos **dois** originais,
+usando os tamanhos efetivos da sua máquina, o mesmo Python e o perfil de energia
+que serão usados na medição. Confira saída correta e `time: ... seconds` de pelo
+menos 20 s, com margem; o piloto preparado para pedro exige pelo menos 22 s.
+Confira também se o maior tamanho cabe na RAM com folga, observando o pico real.
+O tempo total de abrir o processo e construir a entrada não satisfaz o requisito
+do tempo computacional. Se qualquer critério falhar, ajuste e valide antes de
+iniciar; não trate a documentação da pendência como uma exceção aceita.
 
 ### 4.3 Se o `verificar.py` reclamar
 
@@ -118,6 +133,9 @@ python scripts/rodar_benchmarks.py --maquina SEUNOME 2>&1 | tee resultados-SEUNO
   misturar rodadas. Para recomeçar do zero, apague/renomeie `resultados/SEUNOME/raw.csv`.
 - As 10 repetições são **intercaladas** entre configurações (rodada 1 de tudo,
   depois rodada 2 de tudo...), então uma interrupção ainda deixa dados balanceados.
+- Só retome se Python, fontes, ofuscado, tamanhos e perfil de energia forem
+  os mesmos. Se mudar a condição, preserve a rodada anterior em uma subpasta
+  identificada e produza outro CSV. Não complete dez amostras misturando perfis.
 
 ### 4.6 Conferir e enviar
 
@@ -132,6 +150,17 @@ git push
 Commite **apenas** as pastas com o seu id (e o `config.json` se tiver adicionado o seu
 `ajustes_por_maquina`). Não commite `.venv/`, `.pyarmor/` nem o `.log`. Se vierem
 execuções com falha, o `analisar.py` avisa quantas foram ignoradas.
+
+Antes do commit, confira dez repetições únicas por caso, saída correta, retorno
+zero e duração de pelo menos 20 s no original dos dois benchmarks. Na configuração
+atual, a rodada completa tem 240 casos. O analisador gera tabelas mesmo quando
+faltam repetições; ter um gráfico não comprova uma rodada completa.
+
+No Windows, confirme que os dois `pyarmor_runtime.pyd` do seu ofuscado foram
+incluídos: o padrão `*.py[cod]` do `.gitignore` também ignora `.pyd`. Se necessário,
+adicione explicitamente apenas esses runtimes da sua máquina com `git add -f --`
+seguido dos caminhos completos relativos ao repositório. Eles são parte da entrega,
+assim como o runtime `.so` de Linux; não force a inclusão de caches ou do venv.
 
 ## 5. Ajustes de tamanho por máquina (`ajustes_por_maquina`)
 
@@ -185,13 +214,20 @@ as tabelas e os gráficos (por máquina e `comparacao.md`).
 ## 8. Como interpretar a comparação
 
 - **slowdown** = tempo médio da configuração ofuscada ÷ tempo médio do original, no
-  mesmo tamanho e na mesma máquina. 1,00× = sem custo; 1,30× = 30% mais lento.
+  mesmo tamanho, máquina, Python e perfil de CPU. 1,00× = sem custo; 1,30× = 30% mais lento.
 - Compare **slowdowns**, não tempos absolutos, entre máquinas: CPUs diferentes têm
   velocidades diferentes, mas o custo relativo da ofuscação é comparável.
 - **Overhead de inicialização** = tempo total do processo − tempo interno do benchmark.
-  Mostra o custo fixo de carregar o runtime/descriptografar o código (relevante no PyArmor).
+  Inclui iniciar Python, carregar o runtime e construir a entrada. Em palavras,
+  construir o corpus é relevante; não atribua toda a diferença ao PyArmor.
 - Desvio padrão alto indica ruído (programas abertos, temperatura, energia).
   Considere repetir a rodada naquela máquina.
+
+O gráfico de comparação usa o maior tamanho de cada máquina, que pode ser
+diferente. Identifique os tamanhos e os perfis no relatório. Slowdown não elimina
+os efeitos de entrada, memória ou interpretador. Como CPU, SO e Python mudam
+entre colegas, não atribua uma diferença isoladamente ao SO sem um experimento
+que controle as demais variáveis. Veja o [registro metodológico](DECISOES-EXPERIMENTO.md).
 
 ## 9. Resumo dos scripts
 

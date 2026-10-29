@@ -8,6 +8,10 @@ todos os integrantes devem saber explicar qualquer parte do trabalho.
 
 > **Vai rodar o benchmark na sua máquina?** Leia o [guia do grupo](docs/GUIA-GRUPO.md)
 > (e, se estiver usando um assistente de IA, o [AGENTS.md](AGENTS.md)).
+>
+> **Antes de medir:** leia os [achados e decisões entre máquinas](docs/DECISOES-EXPERIMENTO.md).
+> O “tudo certo” do verificador não garante 20 s em palavras. O requisito precisa
+> ser conferido nos dois originais em cada máquina/perfil.
 
 ## Objetivo
 
@@ -120,9 +124,10 @@ seu, pois o runtime do PyArmor depende de SO, arquitetura e versão do Python.
 - Cada integrante roda o pipeline na própria máquina e commita **somente** as pastas
   `resultados/<id>/` e `ofuscado/<id>/`. Não há conflito de arquivos.
 - Todos usam os **mesmos tamanhos** do `config.json`, para a comparação ser justa.
-  Se a máquina não comportar (principalmente RAM no `palavras`) ou for rápida demais
-  para o `matrizes`, o `verificar.py` imprime um bloco para a chave `ajustes_por_maquina`
-  do `config.json`, aplicado só à máquina em questão. Isso deve ser documentado.
+  Se precisar de ajustes, use a entrada da sua máquina em `ajustes_por_maquina`
+  do `config.json` e registre os motivos. O verificador sugere ajustes de RAM
+  e de duração de matrizes, mas não confere a duração de palavras. Meça as
+  menores entradas reais de ambos antes da rodada.
 - Depois que os três enviarem, `python scripts/analisar.py` gera as tabelas por
   máquina e `resultados/comparacao.md` com gráficos de slowdown lado a lado.
 - A comparação entre máquinas usa **slowdown** (tempo ofuscado ÷ tempo original, na
@@ -131,7 +136,8 @@ seu, pois o runtime do PyArmor depende de SO, arquitetura e versão do Python.
 ## Metodologia (exigências do enunciado)
 
 - ≥ 3 tamanhos de entrada, cada um ≥ 50% maior que o anterior; menor entrada do
-  original ≥ 20 s (`verificar.py` estima isso; ver `fator_entre_tamanhos` em `config.json`).
+  original ≥ 20 s nos dois benchmarks. O verificador atual estima a duração
+  mínima apenas de matrizes; é necessária conferência real dos dois originais.
 - 10 repetições por caso, intercaladas entre configurações.
 - Tempo medido é o impresso pelo próprio benchmark (`time: X seconds`, só a
   parte computacional); o tempo total do processo também é gravado, e a diferença
@@ -145,13 +151,16 @@ seu, pois o runtime do PyArmor depende de SO, arquitetura e versão do Python.
 | Benchmark | Tamanhos | Observação |
 |---|---|---|
 | matrizes | 560, 840, 1264 (fator 1,5) | ~21 s no original no menor tamanho (Ryzen 5 5500) |
-| palavras | 50M, 80M, 128M (fator 1,6) | **não chega a 20 s** (≈ 8 s no maior): limitado pela RAM |
+| palavras | 50M, 80M, 128M (fator 1,6) | **não chega a 20 s** na referência (≈ 8 s no maior); validar em cada máquina |
 
-**Exceção do `palavras`:** o benchmark mantém todas as palavras na memória
-(~56 bytes por palavra) e leva ~61 ns por palavra. Para 20 s seriam ~325 milhões de
-palavras (~18 GB), mais do que a RAM da máquina de referência (15,5 GiB). Em vez de
-alterar o benchmark do professor, usamos o maior tamanho que cabe e documentamos a
-limitação no relatório.
+**Pendência do `palavras`:** esses tamanhos globais não garantem os 20 s exigidos.
+O corpus fica inteiro na RAM; os ~56 bytes por palavra são uma estimativa que
+pode subestimar o pico em outra configuração. Registrar a limitação não constitui
+dispensa do requisito. A primeira rodada de pedro confirmou a pendência; foram
+preparadas sondas com outro perfil de CPU e entradas, mas a repetição completa
+foi adiada pelo participante. Consulte os
+[achados, evidências e critérios por máquina](docs/DECISOES-EXPERIMENTO.md).
+O perfil de CPU preparado para pedro não deve ser copiado automaticamente.
 
 ## Observações
 

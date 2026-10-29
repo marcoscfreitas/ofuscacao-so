@@ -7,6 +7,8 @@ Você provavelmente está ajudando um dos três. Leia primeiro:
 1. [docs/GUIA-GRUPO.md](docs/GUIA-GRUPO.md) — procedimento completo, passo a passo.
 2. [README.md](README.md) — objetivo, estrutura, metodologia.
 3. [docs/enunciado.md](docs/enunciado.md) — exigências do professor e checklist.
+4. [docs/DECISOES-EXPERIMENTO.md](docs/DECISOES-EXPERIMENTO.md) — achados, pendências
+   dos verificadores e critérios para máquinas/SOs diferentes.
 
 ## Fluxo resumido (id da máquina = primeiro nome da pessoa, minúsculo)
 
@@ -15,13 +17,21 @@ python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\ac
 pip install -r requirements.txt
 python scripts/info_sistema.py --maquina ID
 python scripts/ofuscar.py      --maquina ID
-python scripts/verificar.py    --maquina ID          # só continue se terminar em "tudo certo"
+python scripts/verificar.py    --maquina ID          # exija "tudo certo" e confira 20 s nos dois originais
 python scripts/rodar_benchmarks.py --maquina ID      # horas; veja as regras abaixo
 python scripts/analisar.py --maquina ID
 ```
 
 ## Regras
 
+- **“Tudo certo” não comprova os 20 s nos dois benchmarks.** O verificador atual
+  só estima a duração mínima de matrizes e pode terminar com avisos. Confira as
+  menores entradas reais dos dois originais, a RAM do maior caso e, ao final,
+  as dez repetições por caso. Não declarar exceção aceita apenas por estar documentada.
+- **Perfil de CPU é parte do experimento.** A preparação de pedro em 1200 MHz
+  é específica de sua máquina e ainda não teve rodada completa. Não aplicar esses
+  limites em outras máquinas sem avaliação própria, nem misturar amostras de
+  perfis/Pythons diferentes. Preservar os dados e registrar motivos e estado real.
 - **Pergunte o id da máquina** à pessoa (o primeiro nome dela em minúsculas, ex.: `marcos`). Não invente
   nem use outro nome. Use sempre o mesmo id em todos os comandos.
 - **Não edite `src/`.** São os benchmarks originais do professor.

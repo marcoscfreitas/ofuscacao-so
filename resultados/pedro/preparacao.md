@@ -62,6 +62,13 @@ explícita da exceção ou medir em uma máquina com memória suficiente.
 Documentar a limitação, por si só, não equivale a obter essa aceitação.
 Não houve nova rodada, alteração dos benchmarks ou mudança retroativa dos dados.
 
+**Complemento de 29/10:** essa extrapolação descreve o perfil da primeira rodada.
+Depois foram preparadas sondas sob outro perfil de CPU para atingir 20 s com
+entradas menores. A repetição completa foi adiada pelo participante. Os achados
+e sua aplicação em outras máquinas estão em
+[DECISOES-EXPERIMENTO.md](../../docs/DECISOES-EXPERIMENTO.md); os detalhes locais
+estão no [protocolo](protocolo-correcao.md). Não houve substituição do CSV anterior.
+
 Logs locais, ignorados pelo Git: `preparacao-pedro.log` e
 `verificacao-pedro.log`. Para a seção “Dificuldades e decisões” do relatório,
 usar este registro junto com os resultados finais da rodada.
