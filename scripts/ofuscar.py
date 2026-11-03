@@ -12,7 +12,8 @@ import argparse
 import shutil
 import subprocess
 
-from comum import OFUSCADO, RAIZ, carregar_config, comando_ferramenta, nome_maquina
+from comum import (OFUSCADO, RAIZ, carregar_config, comando_ferramenta, nome_maquina,
+                   pasta_resultados, validar_config)
 
 
 def main():
@@ -23,6 +24,11 @@ def main():
     maquina = nome_maquina(args.maquina)
 
     cfg = carregar_config(maquina)
+    if (pasta_resultados(maquina) / "raw.csv").exists():
+        raise SystemExit("Esta máquina já tem raw.csv: preserve a rodada e seu ofuscado antes de gerar outra condição.")
+    problemas = validar_config(cfg)
+    if problemas:
+        raise SystemExit("; ".join(problemas))
     arquivos = [RAIZ / "src" / b["arquivo"] for b in cfg["benchmarks"].values()]
     alvos = args.configs or [n for n, i in cfg["ofuscadores"].items() if "cmd" in i]
 
@@ -31,6 +37,10 @@ def main():
         if "cmd" not in info:
             continue
         saida = OFUSCADO / maquina / nome
+        # Verifica o destino absoluto antes de qualquer remoção recursiva.
+        saida.resolve().relative_to((OFUSCADO / maquina).resolve())
+        if saida.resolve() == (OFUSCADO / maquina).resolve():
+            raise SystemExit("Diretório de saída inválido")
         if saida.exists():
             shutil.rmtree(saida)
         saida.mkdir(parents=True)

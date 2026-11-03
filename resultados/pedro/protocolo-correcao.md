@@ -1,5 +1,11 @@
 # Protocolo da repetição — pedro
 
+**Atualização de 03/11/2026:** este é o registro da preparação local de 29/10.
+O fluxo compartilhado foi revisado na [auditoria do PDF](../../docs/AUDITORIA-REQUISITOS-2026-11-03.md).
+Usar os scripts de `scripts/` e o guia atualizado; não depender do antigo supervisor
+privado em `.venv`. Os parâmetros de CPU abaixo continuam específicos de pedro e
+não foram ativados nesta revisão. A repetição completa permanece adiada.
+
 Estado: preparação e sondas; a rodada final depende da confirmação de máquina
 parada e da aprovação da verificação antes do início. O atendimento ao requisito
 de duração será determinado pelos dados da nova rodada.

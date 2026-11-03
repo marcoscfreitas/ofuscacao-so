@@ -4,6 +4,12 @@ Registro de 29/10/2026, antes da repetição da rodada de pedro.
 Este documento orienta os integrantes e deve acompanhar o
 [guia de execução](GUIA-GRUPO.md) e o [relatório](relatorio.md).
 
+**Atualização de 03/11:** as descrições abaixo são o registro histórico de 29/10.
+Os scripts foram corrigidos após a leitura do PDF: o pré-voo mede os dois menores
+originais, o runner protege retomadas e há uma auditoria compartilhada. Consulte
+a [conferência de requisitos](AUDITORIA-REQUISITOS-2026-11-03.md) e o guia atualizado
+para o procedimento atual. A nova rodada de pedro continua adiada.
+
 ## 1. O problema identificado
 
 O enunciado exige pelo menos 20 segundos na menor entrada do original, em

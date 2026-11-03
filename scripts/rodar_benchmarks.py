@@ -1,23 +1,17 @@
 #!/usr/bin/env python3
-"""Executa todos os benchmarks (configuração x benchmark x tamanho x repetição).
+"""Rodada completa protegida por pré-voo, confirmação e identidade da condição.
 
-As repetições são intercaladas (rodada 1 de tudo, rodada 2 de tudo, ...) para
-que variações do sistema (temperatura, processos em segundo plano) não se
-concentrem em uma única configuração.
-
-Resultado: resultados/<maquina>/raw.csv (acrescenta; use --retomar para
-continuar uma execução interrompida sem repetir linhas já feitas).
-
-Uso:
-    python scripts/rodar_benchmarks.py --maquina marcos
-    python scripts/rodar_benchmarks.py --maquina marcos --retomar
+Não altera energia. Não mistura CSVs de máquinas, Pythons, fontes ou perfis.
 """
 import argparse
 import csv
+import json
 import platform
-from datetime import datetime
 
-from comum import carregar_config, diretorio_config, executar, nome_maquina, pasta_resultados
+from auditar import auditar
+from comum import (agora, assinatura, carregar_config, contexto_experimento, diretorio_config,
+                   escrever_json, executar_detalhado, hash_csv, memoria_disponivel,
+                   nome_maquina, pasta_resultados, resultado_valido, validar_config)
 
 CAMPOS = ["timestamp", "maquina", "python", "config", "benchmark", "tamanho", "rep",
           "tempo_interno_s", "tempo_total_s", "saida_ok", "returncode"]
@@ -26,59 +20,100 @@ CAMPOS = ["timestamp", "maquina", "python", "config", "benchmark", "tamanho", "r
 def ja_feitos(raw):
     if not raw.exists():
         return set()
-    with open(raw, newline="", encoding="utf-8") as f:
+    with raw.open(newline="", encoding="utf-8") as f:
         return {(r["config"], r["benchmark"], r["tamanho"], r["rep"]) for r in csv.DictReader(f)}
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--maquina", required=True, help="identificador do dono da máquina (ex.: marcos)")
-    ap.add_argument("--retomar", action="store_true",
-                    help="continua uma execução interrompida (não repete linhas já gravadas)")
-    ap.add_argument("--so", nargs="*", help="limita às configurações listadas")
-    ap.add_argument("--reps", type=int, help="sobrescreve 'repeticoes' do config.json (só para testes)")
-    args = ap.parse_args()
-    maquina = nome_maquina(args.maquina)
-
-    cfg = carregar_config(maquina)
-    reps = args.reps or cfg["repeticoes"]
-    configs = args.so or list(cfg["ofuscadores"])
-
+def rodar(maquina, cfg, retomar=False):
+    erros = validar_config(cfg)
+    if erros:
+        raise SystemExit("; ".join(erros))
     pasta = pasta_resultados(maquina)
-    raw = pasta / "raw.csv"
-    if raw.exists() and not args.retomar:
-        raise SystemExit(f"{raw} já existe. Use --retomar para continuar, ou apague/renomeie o "
-                         "arquivo para recomeçar do zero.")
-    feitos = ja_feitos(raw) if args.retomar else set()
-    for nome in configs:
-        d = diretorio_config(nome, cfg, maquina)
-        if not d.exists():
-            raise SystemExit(f"{d} não existe. Rode: python scripts/ofuscar.py --maquina {maquina}")
-
-    pasta.mkdir(parents=True, exist_ok=True)
+    raw, manifesto = pasta / "raw.csv", pasta / "execucao.json"
+    if raw.exists() and not retomar:
+        raise SystemExit("raw.csv já existe. Preserve a rodada; use --retomar somente na mesma condição.")
+    if retomar and (not raw.exists() or not manifesto.exists()):
+        raise SystemExit("Retomada exige CSV e execucao.json da mesma rodada; dados legados não serão alterados.")
+    contexto = contexto_experimento(maquina, cfg)
+    chave = assinatura(contexto)
+    verificacao = pasta / "verificacao.json"
+    if not verificacao.is_file():
+        raise SystemExit("Execute verificar.py --maquina " + maquina + " antes da rodada.")
+    pre = json.loads(verificacao.read_text(encoding="utf-8"))
+    if not pre.get("aprovado") or pre.get("assinatura") != chave:
+        raise SystemExit("Pré-voo reprovado ou contexto mudou (config/Python/fontes/perfil). Execute verificar.py novamente.")
+    if assinatura(pre.get("contexto")) != chave:
+        raise SystemExit("Conteúdo do pré-voo inconsistente com sua assinatura.")
+    livre = memoria_disponivel()
+    if livre is None or livre < pre["ram_exigida_bytes"]:
+        raise SystemExit("RAM livre caiu desde a verificação. Feche programas e repita o pré-voo.")
+    if retomar:
+        meta = json.loads(manifesto.read_text(encoding="utf-8"))
+        if meta.get("assinatura") != chave or assinatura(meta.get("contexto")) != chave:
+            raise SystemExit("Contexto diferente do início da rodada. Não é permitido misturar medições.")
+        parcial = auditar(maquina, cfg=cfg, parcial=True)
+        if parcial["erros"]:
+            raise SystemExit("CSV existente inválido; preserve os dados e reveja a rodada: " + "; ".join(parcial["erros"][:5]))
+    else:
+        if manifesto.exists():
+            raise SystemExit("execucao.json já existe sem CSV; preserve o registro antes de uma nova rodada.")
+        meta = dict(versao=1, inicio=agora(), contexto=contexto, assinatura=chave,
+                    condicoes_confirmadas=True, preflight=pre)
+    meta.update(estado="em_andamento", atualizado=agora())
+    escrever_json(manifesto, meta)
+    feitos = ja_feitos(raw)
     novo = not raw.exists()
-    with open(raw, "a", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=CAMPOS)
-        if novo:
-            w.writeheader()
-        for rep in range(1, reps + 1):
-            for bname, bench in cfg["benchmarks"].items():
-                for tamanho in bench["tamanhos"]:
-                    for nome in configs:
-                        if (nome, bname, str(tamanho), str(rep)) in feitos:
-                            continue
-                        interno, total, ok, rc = executar(
-                            diretorio_config(nome, cfg, maquina), bench["arquivo"], tamanho)
-                        print(f"[rep {rep}/{reps}] {nome:20s} {bname:9s} n={tamanho:<10d} "
-                              f"interno={interno} total={total:.2f}s ok={ok} rc={rc}", flush=True)
-                        w.writerow(dict(
-                            timestamp=datetime.now().isoformat(timespec="seconds"),
-                            maquina=maquina, python=platform.python_version(),
-                            config=nome, benchmark=bname, tamanho=tamanho, rep=rep,
-                            tempo_interno_s=interno, tempo_total_s=round(total, 3),
-                            saida_ok=int(ok), returncode=rc))
-                        f.flush()
-    print(f"\nconcluído: {raw}")
+    try:
+        with raw.open("a", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=CAMPOS)
+            if novo:
+                w.writeheader()
+                f.flush()
+            for rep in range(1, cfg["repeticoes"] + 1):
+                for bench, info in cfg["benchmarks"].items():
+                    for n in info["tamanhos"]:
+                        for config in cfg["ofuscadores"]:
+                            if (config, bench, str(n), str(rep)) in feitos:
+                                continue
+                            r = executar_detalhado(diretorio_config(config, cfg, maquina), info["arquivo"], n,
+                                                 memoria_minima=pre["reserva_memoria_bytes"])
+                            t = r["tempo_interno_s"]
+                            print(f"[rep {rep}/10] {config} {bench} n={n} interno={t} "
+                                  f"total={r['tempo_total_s']:.2f}s ok={r['saida_ok']} rc={r['returncode']}", flush=True)
+                            w.writerow(dict(timestamp=agora(), maquina=maquina, python=platform.python_version(),
+                                            config=config, benchmark=bench, tamanho=n, rep=rep, tempo_interno_s=t,
+                                            tempo_total_s=round(r["tempo_total_s"], 3),
+                                            saida_ok=int(r["saida_ok"]), returncode=r["returncode"]))
+                            f.flush()
+                            if not resultado_valido(r) or (config == "original" and t < cfg["tamanho_minimo_segundos"]):
+                                escrever_json(pasta / "falha.json", dict(config=config, benchmark=bench, tamanho=n, rep=rep, **r))
+                                raise RuntimeError("Caso reprovado: saída/retorno/tempo ou RAM. Rodada interrompida; detalhes em falha.json.")
+        if assinatura(contexto_experimento(maquina, cfg)) != chave:
+            raise RuntimeError("Contexto mudou durante a rodada; não declarar medições conformes.")
+        meta.update(estado="concluido", fim=agora(), csv_sha256=hash_csv(raw))
+        escrever_json(manifesto, meta)
+        auditoria = auditar(maquina, cfg=cfg)
+        escrever_json(pasta / "auditoria.json", auditoria)
+        if not auditoria["aprovado"]:
+            raise RuntimeError("A auditoria final reprovou a rodada: " + "; ".join(auditoria["erros"]))
+    except BaseException as erro:
+        meta.update(estado="interrompido", atualizado=agora(), erro=str(erro))
+        escrever_json(manifesto, meta)
+        raise
+    print("Concluído e auditado:", raw)
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--maquina", required=True)
+    ap.add_argument("--retomar", action="store_true")
+    ap.add_argument("--confirmar-condicoes", action="store_true",
+                    help="confirma tomada, programas fechados, suspensão desativada e máquina sem uso")
+    args = ap.parse_args()
+    if not args.confirmar_condicoes:
+        raise SystemExit("Confirme com a pessoa as condições exigidas e use --confirmar-condicoes. Nenhuma medição iniciada.")
+    maquina = nome_maquina(args.maquina)
+    rodar(maquina, carregar_config(maquina), args.retomar)
 
 
 if __name__ == "__main__":

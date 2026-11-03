@@ -9,6 +9,8 @@ Você provavelmente está ajudando um dos três. Leia primeiro:
 3. [docs/enunciado.md](docs/enunciado.md) — exigências do professor e checklist.
 4. [docs/DECISOES-EXPERIMENTO.md](docs/DECISOES-EXPERIMENTO.md) — achados, pendências
    dos verificadores e critérios para máquinas/SOs diferentes.
+5. [docs/AUDITORIA-REQUISITOS-2026-11-03.md](docs/AUDITORIA-REQUISITOS-2026-11-03.md)
+   — conferência do PDF original e fluxo compartilhado revisado.
 
 ## Fluxo resumido (id da máquina = primeiro nome da pessoa, minúsculo)
 
@@ -18,16 +20,20 @@ pip install -r requirements.txt
 python scripts/info_sistema.py --maquina ID
 python scripts/ofuscar.py      --maquina ID
 python scripts/verificar.py    --maquina ID          # exija "tudo certo" e confira 20 s nos dois originais
-python scripts/rodar_benchmarks.py --maquina ID      # horas; veja as regras abaixo
+python scripts/rodar_benchmarks.py --maquina ID --confirmar-condicoes  # só após confirmação; horas
 python scripts/analisar.py --maquina ID
 ```
 
 ## Regras
 
-- **“Tudo certo” não comprova os 20 s nos dois benchmarks.** O verificador atual
-  só estima a duração mínima de matrizes e pode terminar com avisos. Confira as
-  menores entradas reais dos dois originais, a RAM do maior caso e, ao final,
-  as dez repetições por caso. Não declarar exceção aceita apenas por estar documentada.
+- **Use o pré-voo revisado.** Agora ele mede os dois menores originais e a RAM
+  do maior palavras; abaixo de 20 s reprova. O resultado fica em `verificacao.json`.
+  Para escolher entradas por máquina, `--sugerir-tamanhos` faz somente sondas curtas
+  e não aprova nem aplica ajustes. Audite as dez repetições por caso com `auditar.py`.
+  Não declarar exceção aceita apenas por estar documentada.
+- **Retomada exige a mesma condição.** O runner registra `execucao.json` e bloqueia
+  troca de Python, fontes, configuração ou perfil. Dados legados sem manifesto
+  só podem ser analisados com `--exploratorio`; não invente metadados para aprová-los.
 - **Perfil de CPU é parte do experimento.** A preparação de pedro em 1200 MHz
   é específica de sua máquina e ainda não teve rodada completa. Não aplicar esses
   limites em outras máquinas sem avaliação própria, nem misturar amostras de

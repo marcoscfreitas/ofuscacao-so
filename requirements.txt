@@ -1,6 +1,6 @@
 # Ofuscadores
-pyarmor
-python-minifier
+pyarmor==9.2.8
+python-minifier==3.4.0
 
 # Análise / gráficos
 matplotlib

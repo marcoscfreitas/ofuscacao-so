@@ -10,8 +10,9 @@ todos os integrantes devem saber explicar qualquer parte do trabalho.
 > (e, se estiver usando um assistente de IA, o [AGENTS.md](AGENTS.md)).
 >
 > **Antes de medir:** leia os [achados e decisões entre máquinas](docs/DECISOES-EXPERIMENTO.md).
-> O “tudo certo” do verificador não garante 20 s em palavras. O requisito precisa
-> ser conferido nos dois originais em cada máquina/perfil.
+> Na [revisão do PDF em 03/11](docs/AUDITORIA-REQUISITOS-2026-11-03.md), o fluxo
+> foi corrigido para conferir os dois originais e a memória nesta máquina.
+> As medições antigas ainda têm pendências; código corrigido não substitui uma nova rodada.
 
 ## Objetivo
 
@@ -65,8 +66,8 @@ Ferramentas de ofuscação usadas:
 
 | Ferramenta | Instalação | Site |
 |---|---|---|
-| PyArmor | `pip install pyarmor` | https://github.com/dashingsoft/pyarmor |
-| python-minifier | `pip install python-minifier` | https://github.com/dflook/python-minifier |
+| PyArmor | `pip install pyarmor==9.2.8` | https://github.com/dashingsoft/pyarmor |
+| python-minifier | `pip install python-minifier==3.4.0` | https://github.com/dflook/python-minifier |
 
 Ambas entram no `requirements.txt`. Os scripts as chamam via `python -m`, usando o
 Python do venv ativo, então não dependem do PATH.
@@ -88,12 +89,22 @@ python scripts/ofuscar.py --maquina <id>
 python scripts/verificar.py --maquina <id>
 
 # 4. Rodada completa (10 repetições; horas) — retome com --retomar se interromper
-python scripts/rodar_benchmarks.py --maquina <id>
+python scripts/rodar_benchmarks.py --maquina <id> --confirmar-condicoes
 
 # 5. Tabelas e gráficos
 python scripts/analisar.py --maquina <id>     # só esta máquina
 python scripts/analisar.py                    # todas + comparação entre máquinas
 ```
+
+Em um computador diferente, use antes `python scripts/verificar.py --maquina <id>
+--sugerir-tamanhos` para obter estimativas com sondas curtas. Aplique apenas a
+entrada daquele id em `ajustes_por_maquina` e execute depois a verificação completa.
+As sugestões não mudam arquivos de configuração nem aprovam a medição. Os scripts
+compartilhados consultam energia, mas nunca limitam a CPU automaticamente.
+
+Auditoria sem medir: `python scripts/auditar.py --maquina <id>`.
+Para analisar dados antigos/incompletos, use `analisar.py --maquina <id>
+--exploratorio`; tabelas e gráficos serão identificados como exploratórios.
 
 Detalhes (preparar a noite de medição, o que fazer se o `verificar.py` reclamar,
 commits, ajustes de tamanho por máquina) estão no [guia do grupo](docs/GUIA-GRUPO.md).
@@ -125,9 +136,9 @@ seu, pois o runtime do PyArmor depende de SO, arquitetura e versão do Python.
   `resultados/<id>/` e `ofuscado/<id>/`. Não há conflito de arquivos.
 - Todos usam os **mesmos tamanhos** do `config.json`, para a comparação ser justa.
   Se precisar de ajustes, use a entrada da sua máquina em `ajustes_por_maquina`
-  do `config.json` e registre os motivos. O verificador sugere ajustes de RAM
-  e de duração de matrizes, mas não confere a duração de palavras. Meça as
-  menores entradas reais de ambos antes da rodada.
+  do `config.json` e registre os motivos. O verificador atualizado mede os dois
+  menores originais e o pico do maior palavras, salvando o resultado do pré-voo.
+  Ele reprova quando duração ou memória não servem e não aplica ajustes sozinho.
 - Depois que os três enviarem, `python scripts/analisar.py` gera as tabelas por
   máquina e `resultados/comparacao.md` com gráficos de slowdown lado a lado.
 - A comparação entre máquinas usa **slowdown** (tempo ofuscado ÷ tempo original, na
@@ -136,8 +147,7 @@ seu, pois o runtime do PyArmor depende de SO, arquitetura e versão do Python.
 ## Metodologia (exigências do enunciado)
 
 - ≥ 3 tamanhos de entrada, cada um ≥ 50% maior que o anterior; menor entrada do
-  original ≥ 20 s nos dois benchmarks. O verificador atual estima a duração
-  mínima apenas de matrizes; é necessária conferência real dos dois originais.
+  original ≥ 20 s nos dois benchmarks, conferidos por execução real no pré-voo.
 - 10 repetições por caso, intercaladas entre configurações.
 - Tempo medido é o impresso pelo próprio benchmark (`time: X seconds`, só a
   parte computacional); o tempo total do processo também é gravado, e a diferença
@@ -174,3 +184,13 @@ O perfil de CPU preparado para pedro não deve ser copiado automaticamente.
 ## Dificuldades, decisões e extras
 
 Registrados em [docs/relatorio.md](docs/relatorio.md).
+
+## Testar os scripts sem uma rodada longa
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Os testes usam pastas temporárias e dados sintéticos; não alteram os CSVs reais.
+O código é comum entre Windows/Linux/macOS, mas cada participante deve validar
+seus runtimes, RAM, entradas e condições locais antes da rodada.

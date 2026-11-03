@@ -1,5 +1,7 @@
 # Resultados — pedro
 
+> EXPLORATÓRIO: pendências registradas em auditoria.json; não comprova atendimento ao enunciado.
+
 ## matrizes
 
 | tamanho | config | n | média (s) | mediana (s) | desvio (s) | mín (s) | máx (s) | slowdown vs original | overhead de inicialização (s) |

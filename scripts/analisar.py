@@ -14,9 +14,12 @@ Uso:
 import argparse
 import csv
 import statistics as st
+import math
 from collections import defaultdict
 
+from auditar import auditar
 from comum import RESULTADOS, carregar_config, maquinas_com_resultados, nome_maquina, pasta_resultados
+from comum import escrever_json
 
 
 def carregar(maquina):
@@ -25,8 +28,13 @@ def carregar(maquina):
     descartadas = 0
     with open(pasta_resultados(maquina) / "raw.csv", newline="", encoding="utf-8") as f:
         for r in csv.DictReader(f):
-            if r["returncode"] == "0" and r["saida_ok"] == "1" and r["tempo_interno_s"]:
+            try:
+                t, t_total = float(r["tempo_interno_s"]), float(r["tempo_total_s"])
                 chave = (r["benchmark"], int(r["tamanho"]), r["config"])
+                valido = math.isfinite(t) and math.isfinite(t_total) and t > 0 and t_total > 0
+            except (KeyError, TypeError, ValueError):
+                valido = False
+            if r.get("returncode") == "0" and r.get("saida_ok") == "1" and valido:
                 interno[chave].append(float(r["tempo_interno_s"]))
                 total[chave].append(float(r["tempo_total_s"]))
             else:
@@ -73,34 +81,39 @@ def importar_pyplot():
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         return plt
-    except ImportError:
-        print("matplotlib não instalado; pulando gráficos")
-        return None
+    except ImportError as erro:
+        raise SystemExit("matplotlib não instalado; instale requirements.txt para produzir os gráficos exigidos") from erro
 
 
-def graficos(plt, maquina, interno, ordem):
+def graficos(plt, maquina, interno, ordem, exploratorio=False):
     pasta = pasta_resultados(maquina) / "graficos"
     pasta.mkdir(exist_ok=True)
     for bench in sorted({k[0] for k in interno}):
         tamanhos = sorted({k[1] for k in interno if k[0] == bench})
-        fig, ax = plt.subplots(figsize=(8, 5))
+        fig, eixos = plt.subplots(2, 3, figsize=(15, 8))
+        estatisticas = [("media", "Média"), ("mediana", "Mediana"), ("desvio", "Desvio padrão amostral"),
+                       ("min", "Mínimo"), ("max", "Máximo")]
         larg = 0.8 / len(ordem)
-        for i, cfg in enumerate(ordem):
-            xs, medias, erros = [], [], []
-            for j, tam in enumerate(tamanhos):
-                v = interno.get((bench, tam, cfg))
-                if v:
-                    xs.append(j + i * larg)
-                    medias.append(st.mean(v))
-                    erros.append(st.stdev(v) if len(v) > 1 else 0)
-            ax.bar(xs, medias, larg, yerr=erros, capsize=3, label=cfg)
-        ax.set_xticks([j + 0.4 - larg / 2 for j in range(len(tamanhos))])
-        ax.set_xticklabels([f"{t:,}" for t in tamanhos])
-        ax.set_xlabel("tamanho da entrada")
-        ax.set_ylabel("tempo (s) — média ± desvio padrão")
-        ax.set_title(f"Benchmark: {bench} — máquina: {maquina}")
-        ax.legend()
-        fig.tight_layout()
+        for ax, (chave, titulo) in zip(eixos.flat, estatisticas):
+            for i, cfg in enumerate(ordem):
+                xs, valores = [], []
+                for j, tam in enumerate(tamanhos):
+                    v = interno.get((bench, tam, cfg))
+                    if v:
+                        xs.append(j + i * larg)
+                        valores.append(resumo(v)[chave])
+                ax.bar(xs, valores, larg, label=cfg)
+            ax.set_xticks([j + 0.4 - larg / 2 for j in range(len(tamanhos))])
+            ax.set_xticklabels([f"{t:,}" for t in tamanhos], rotation=15)
+            ax.set_xlabel("tamanho da entrada")
+            ax.set_ylabel("tempo computacional (s)")
+            ax.set_title(titulo)
+        eixos.flat[-1].axis("off")
+        handles, labels = eixos.flat[0].get_legend_handles_labels()
+        eixos.flat[-1].legend(handles, labels, loc="center", frameon=False)
+        estado = " — EXPLORATÓRIO: há pendências" if exploratorio else ""
+        fig.suptitle(f"{bench} — máquina: {maquina}{estado}", fontsize=14)
+        fig.tight_layout(rect=(0, 0, 1, 0.95))
         fig.savefig(pasta / f"{bench}.png", dpi=150)
         plt.close(fig)
 
@@ -110,10 +123,12 @@ def media(d, chave):
     return st.mean(v) if v else None
 
 
-def comparacao(plt, por_maquina, ordem):
+def comparacao(plt, por_maquina, ordem, exploratorio=False):
     """Tabela e gráficos lado a lado entre máquinas."""
     maquinas = list(por_maquina)
     linhas = ["# Comparação entre máquinas\n"]
+    if exploratorio:
+        linhas.append("> EXPLORATÓRIO: pelo menos uma rodada tem pendências de validação.\n")
     benchs = sorted({k[0] for m in maquinas for k in por_maquina[m]})
     for bench in benchs:
         linhas.append(f"\n## {bench}\n")
@@ -156,7 +171,8 @@ def comparacao(plt, por_maquina, ordem):
         ax.set_xticks([j + 0.4 - larg / 2 for j in range(len(ofuscadas))])
         ax.set_xticklabels(ofuscadas)
         ax.set_ylabel("slowdown (tempo ofuscado / tempo original)")
-        ax.set_title(f"Benchmark: {bench} — maior tamanho de cada máquina")
+        nota = " — EXPLORATÓRIO" if exploratorio else ""
+        ax.set_title(f"Benchmark: {bench} — maior tamanho de cada máquina{nota}")
         ax.legend()
         fig.tight_layout()
         fig.savefig(RESULTADOS / "graficos" / f"comparacao_{bench}.png", dpi=150)
@@ -166,25 +182,35 @@ def comparacao(plt, por_maquina, ordem):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--maquina", help="analisa só esta máquina (padrão: todas as encontradas)")
+    ap.add_argument("--exploratorio", action="store_true", help="gera saídas marcadas mesmo com pendências")
     args = ap.parse_args()
 
     maquinas = [nome_maquina(args.maquina)] if args.maquina else maquinas_com_resultados()
     if not maquinas:
         raise SystemExit("nenhum resultados/<maquina>/raw.csv encontrado")
 
-    ordem = list(carregar_config()["ofuscadores"])
+    auditorias = {m: auditar(m) for m in maquinas}
+    for m, rel in auditorias.items():
+        escrever_json(pasta_resultados(m) / "auditoria.json", rel)
+    if not args.exploratorio and any(not a["aprovado"] for a in auditorias.values()):
+        raise SystemExit("Rodada reprovada/incompleta ou legada. Consulte auditoria.json; "
+                         "use --exploratorio para gerar gráficos identificados com a pendência.")
+    ordem = list(dict.fromkeys(c for a in auditorias.values() for c in a["config"]["ofuscadores"]))
     plt = importar_pyplot()
     por_maquina = {}
     for m in maquinas:
         interno, total = carregar(m)
         por_maquina[m] = interno
+        aviso = ""
+        if not auditorias[m]["aprovado"]:
+            aviso = "\n> EXPLORATÓRIO: pendências registradas em auditoria.json; não comprova atendimento ao enunciado.\n"
         (pasta_resultados(m) / "tabelas.md").write_text(
-            f"# Resultados — {m}\n" + tabelas(interno, total, ordem), encoding="utf-8")
+            f"# Resultados — {m}\n" + aviso + tabelas(interno, total, ordem), encoding="utf-8")
         if plt:
-            graficos(plt, m, interno, ordem)
+            graficos(plt, m, interno, ordem, exploratorio=not auditorias[m]["aprovado"])
         print(f"escrito: resultados/{m}/tabelas.md e resultados/{m}/graficos/")
     if len(maquinas) > 1:
-        comparacao(plt, por_maquina, ordem)
+        comparacao(plt, por_maquina, ordem, exploratorio=any(not a["aprovado"] for a in auditorias.values()))
         print("escrito: resultados/comparacao.md e resultados/graficos/comparacao_*.png")
 
 

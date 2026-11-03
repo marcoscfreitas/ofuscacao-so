@@ -1,134 +1,149 @@
 #!/usr/bin/env python3
-"""Checagem pré-voo: rode ANTES de deixar o benchmark completo rodando.
+"""Pré-voo por máquina: duração real dos dois originais e RAM do maior palavras.
 
-Verifica, nesta máquina:
-  1. ferramentas instaladas e código ofuscado gerado (ofuscado/<maquina>/);
-  2. cada configuração roda e imprime "ok" (testes curtos);
-  3. a RAM disponível comporta o maior tamanho do palavras;
-  4. o menor tamanho do matrizes leva >= 20 s no original (estimativa);
-  5. quanto tempo a rodada completa deve levar (estimativa).
-
-Se algum tamanho não servir, imprime um trecho de "ajustes_por_maquina" para
-colar no config.json (ver README). Não altera nenhum arquivo.
-
-Uso:
-    python scripts/verificar.py --maquina marcos
+Grava verificacao.json; não muda config, energia, fontes ou resultados anteriores.
+Sugestões são estimativas: só se aprova uma entrada realmente medida >= 20 s.
 """
 import argparse
-import sys
+import json
+import math
 
-from comum import (BYTES_POR_PALAVRA, RAIZ, carregar_config, diretorio_config, executar,
-                   memoria_disponivel, nome_maquina)
+from comum import (BYTES_POR_PALAVRA, FOLGA_RAM, agora, assinatura,
+                   carregar_config, contexto_experimento, diretorio_config,
+                   escrever_json, executar_detalhado, memoria_disponivel,
+                   nome_maquina, pasta_resultados, reserva_memoria,
+                   resultado_valido, tamanhos_progressivos, validar_config)
 
 TESTE_CURTO = {"matrizes": 64, "palavras": 1_000_000}
-SONDA = {"matrizes": 200, "palavras": 5_000_000}  # tamanhos usados para estimar tempos
-FOLGA_RAM = 1.25  # exige 25% a mais de RAM livre do que o estimado
+SONDA = {"matrizes": 200, "palavras": 5_000_000}
 
 
-def multiplo_de_8(n):
-    return max(8, int(round(n / 8)) * 8)
+def verificar(maquina, cfg, somente_sugestoes=False):
+    problemas = validar_config(cfg)
+    rel = dict(versao=1, maquina=maquina, data=agora(), aprovado=False,
+               problemas=problemas, medicoes=[], sugestoes={})
+    if problemas:
+        return rel
+    contexto = contexto_experimento(maquina, cfg)
+    rel.update(contexto=contexto, assinatura=assinatura(contexto))
+    alvo, fator = cfg["tamanho_minimo_segundos"], cfg["fator_entre_tamanhos"]
+    rel["reserva_memoria_bytes"] = reserva_memoria()
+    custos = {}
+
+    def medir(config, bench, tamanho, etapa):
+        d = diretorio_config(config, cfg, maquina)
+        arquivo = cfg["benchmarks"][bench]["arquivo"]
+        if not (d / arquivo).is_file():
+            problemas.append(f"{config}/{arquivo} ausente; gere o ofuscado desta máquina")
+            return None
+        r = executar_detalhado(d, arquivo, tamanho, memoria_minima=rel["reserva_memoria_bytes"])
+        rel["medicoes"].append(dict(config=config, benchmark=bench, tamanho=tamanho, etapa=etapa, **r))
+        print(f"{etapa}: {config}/{bench} n={tamanho} tempo={r['tempo_interno_s']}s "
+              f"ok={r['saida_ok']} rc={r['returncode']}", flush=True)
+        if not resultado_valido(r):
+            erro = r["motivo"] or r["stderr"].strip() or r["stdout"].strip() or "tempo/saída inválidos"
+            problemas.append(f"{config}/{bench} falhou (rc={r['returncode']}): {erro}")
+            return None
+        return r
+
+    print("[1/4] correção das configurações", flush=True)
+    for config in cfg["ofuscadores"]:
+        for bench in cfg["benchmarks"]:
+            medir(config, bench, TESTE_CURTO[bench], "curto")
+    if problemas:
+        return rel
+
+    print("[2/4] sondas para sugestões e estimativa de RAM", flush=True)
+    bytes_palavra = BYTES_POR_PALAVRA
+    for bench, info in cfg["benchmarks"].items():
+        n = min(SONDA[bench], min(info["tamanhos"]))
+        r = medir("original", bench, n, "sonda")
+        if r is None:
+            continue
+        base = n * (alvo * 1.25 / r["tempo_interno_s"]) ** (1 / info["expoente_custo"])
+        rel["sugestoes"][bench] = {"tamanhos": tamanhos_progressivos(base, fator)}
+        custos[bench] = (n, r)
+        if bench == "palavras":
+            bytes_palavra = max(bytes_palavra, math.ceil(r["pico_memoria_bytes"] / n))
+    if problemas:
+        return rel
+
+    livre = memoria_disponivel()
+    maior_palavras = max(cfg["benchmarks"]["palavras"]["tamanhos"])
+    exigida = math.ceil(maior_palavras * bytes_palavra * FOLGA_RAM)
+    rel.update(bytes_por_palavra=bytes_palavra, ram_disponivel_bytes=livre, ram_exigida_bytes=exigida)
+    print(f"RAM: exige {exigida / 2**30:.2f} GiB livres, com folga e {bytes_palavra} B/palavra", flush=True)
+    ram_ok = livre is not None and livre >= max(exigida, rel["reserva_memoria_bytes"])
+    if not ram_ok:
+        problemas.append("RAM livre insuficiente ou não medida para o maior palavras; não executar a entrada grande")
+    sugerida = rel["sugestoes"]["palavras"]["tamanhos"][-1] * bytes_palavra * FOLGA_RAM
+    rel["sugestao_palavras_cabe_ram"] = livre is not None and sugerida <= livre
+    if somente_sugestoes:
+        rel["somente_sugestoes"] = True
+        return rel
+
+    print("[3/4] duração REAL das menores entradas originais", flush=True)
+    for bench, info in cfg["benchmarks"].items():
+        if bench == "palavras" and not ram_ok:
+            continue
+        n = min(info["tamanhos"])
+        r = medir("original", bench, n, "menor_real")
+        if r is None:
+            continue
+        custos[bench] = (n, r)
+        if r["tempo_interno_s"] < alvo:
+            problemas.append(f"{bench} n={n}: {r['tempo_interno_s']:.3f} s < {alvo} s exigidos")
+            base = n * (alvo * 1.25 / r["tempo_interno_s"]) ** (1 / info["expoente_custo"])
+            rel["sugestoes"][bench] = {"tamanhos": tamanhos_progressivos(base, fator)}
+
+    print("[4/4] pico REAL de memória na maior entrada de palavras", flush=True)
+    if not problemas:
+        r = medir("original", "palavras", maior_palavras, "maior_real")
+        if r:
+            exigida = max(exigida, math.ceil(r["pico_memoria_bytes"] * FOLGA_RAM))
+            rel["ram_exigida_bytes"] = exigida
+            if livre < exigida:
+                problemas.append("pico real do maior palavras não deixa a folga de RAM exigida")
+            custos["palavras"] = (maior_palavras, r)
+    segundos = 0
+    for bench, (n, r) in custos.items():
+        exp = cfg["benchmarks"][bench]["expoente_custo"]
+        segundos += sum(r["tempo_total_s"] * (t / n) ** exp for t in cfg["benchmarks"][bench]["tamanhos"])
+    rel["estimativa_horas"] = segundos * len(cfg["ofuscadores"]) * cfg["repeticoes"] / 3600
+    if "palavras" in rel["sugestoes"]:
+        sugerida = rel["sugestoes"]["palavras"]["tamanhos"][-1] * bytes_palavra * FOLGA_RAM
+        rel["sugestao_palavras_cabe_ram"] = livre is not None and sugerida <= livre
+    if assinatura(contexto_experimento(maquina, cfg)) != rel["assinatura"]:
+        problemas.append("contexto mudou durante a verificação; repetir sob condição constante")
+    rel["aprovado"] = not problemas
+    return rel
 
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--maquina", required=True, help="identificador do dono da máquina (ex.: marcos)")
-    maquina = nome_maquina(ap.parse_args().maquina)
-    cfg = carregar_config(maquina)
-    alvo = cfg["tamanho_minimo_segundos"]
-    fator = cfg["fator_entre_tamanhos"]
-    problemas, avisos, ajustes = [], [], {}
-
-    print(f"== verificando máquina '{maquina}' (Python {sys.version.split()[0]}) ==\n")
-
-    # 1 + 2. ofuscado existe e roda
-    print("[1/4] código ofuscado e teste curto")
-    for nome in cfg["ofuscadores"]:
-        d = diretorio_config(nome, cfg, maquina)
-        if not d.exists():
-            problemas.append(f"{d.relative_to(RAIZ)} não existe -> "
-                             f"python scripts/ofuscar.py --maquina {maquina}")
-            print(f"   {nome:20s} AUSENTE")
-            continue
-        status = []
-        for bname, bench in cfg["benchmarks"].items():
-            _, _, ok, rc = executar(d, bench["arquivo"], TESTE_CURTO[bname])
-            status.append(f"{bname}={'ok' if ok and rc == 0 else 'FALHOU'}")
-            if not (ok and rc == 0):
-                problemas.append(f"{nome}/{bench['arquivo']} falhou (rc={rc}); rode manualmente: "
-                                 f"cd {d.relative_to(RAIZ)} && python {bench['arquivo']} "
-                                 f"{TESTE_CURTO[bname]}")
-        print(f"   {nome:20s} {'  '.join(status)}")
-
-    # 3. sonda do original -> estimativas
-    print("\n[2/4] medindo o original para estimar tempos (alguns segundos)")
-    original = RAIZ / "src"
-    t_sonda = {}
-    for bname, bench in cfg["benchmarks"].items():
-        t, _, ok, rc = executar(original, bench["arquivo"], SONDA[bname])
-        if t is None or not ok:
-            problemas.append(f"original/{bench['arquivo']} falhou na sonda (rc={rc})")
-            continue
-        t_sonda[bname] = t
-        print(f"   {bname}: n={SONDA[bname]} -> {t:.2f} s")
-
-    def estimar(bname, n):
-        exp = cfg["benchmarks"][bname]["expoente_custo"]
-        return t_sonda[bname] * (n / SONDA[bname]) ** exp
-
-    # 4. memória do palavras
-    print("\n[3/4] memória (palavras)")
-    livre = memoria_disponivel()
-    pal = cfg["benchmarks"]["palavras"]["tamanhos"]
-    precisa = max(pal) * BYTES_POR_PALAVRA
-    if livre is None:
-        avisos.append("não consegui medir a RAM disponível (instale psutil: pip install psutil)")
-    else:
-        print(f"   disponível: {livre / 2**30:.1f} GiB | maior tamanho ({max(pal):,}) "
-              f"precisa de ~{precisa / 2**30:.1f} GiB")
-        if livre < precisa * FOLGA_RAM:
-            teto = multiplo_de_8(livre / FOLGA_RAM / BYTES_POR_PALAVRA)
-            novo = [multiplo_de_8(teto / fator ** i) for i in (2, 1, 0)]
-            problemas.append("RAM insuficiente para os tamanhos do palavras no config.json "
-                             "(feche programas e rode de novo; se persistir, use o ajuste abaixo)")
-            ajustes.setdefault("benchmarks", {})["palavras"] = {"tamanhos": novo}
-
-    # 5. matrizes >= 20 s
-    print("\n[4/4] menor tamanho do matrizes no original")
-    mat = cfg["benchmarks"]["matrizes"]["tamanhos"]
-    if "matrizes" in t_sonda:
-        est = estimar("matrizes", min(mat))
-        print(f"   n={min(mat)} -> ~{est:.1f} s estimados (mínimo exigido: {alvo} s)")
-        if est < alvo * 0.95:
-            n0 = multiplo_de_8(SONDA["matrizes"] * (alvo * 1.1 / t_sonda["matrizes"]) ** (1 / 3))
-            novo = [n0, multiplo_de_8(n0 * fator), multiplo_de_8(n0 * fator ** 2)]
-            avisos.append(f"matrizes n={min(mat)} deve levar < {alvo} s nesta máquina "
-                          "(esta máquina é mais rápida que a de referência)")
-            ajustes.setdefault("benchmarks", {})["matrizes"] = {"tamanhos": novo}
-
-    # tempo total estimado
-    if len(t_sonda) == len(cfg["benchmarks"]):
-        por_rodada = sum(estimar(b, n) for b, bench in cfg["benchmarks"].items()
-                         for n in bench["tamanhos"])
-        total = por_rodada * len(cfg["ofuscadores"]) * cfg["repeticoes"]
-        print(f"\nTempo estimado da rodada completa: ~{total / 3600:.1f} h "
-              f"({len(cfg['ofuscadores'])} configs x {cfg['repeticoes']} repetições; "
-              "inclui o tempo de montar as entradas só aproximadamente)")
-
-    print()
-    for a in avisos:
-        print("AVISO:", a)
-    for p in problemas:
-        print("PROBLEMA:", p)
-    if ajustes:
-        import json
-        print("\nSe os tamanhos não servirem, adicione em config.json (chave de topo):")
-        print(json.dumps({"ajustes_por_maquina": {maquina: ajustes}}, indent=2))
-        print("Avise o grupo: tamanhos diferentes entre máquinas reduzem a comparabilidade.")
-    if problemas:
-        print("\nRESULTADO: corrija os problemas acima antes de rodar o benchmark completo.")
-        sys.exit(1)
-    print("RESULTADO: tudo certo. Pode rodar: "
-          f"python scripts/rodar_benchmarks.py --maquina {maquina}")
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--maquina", required=True)
+    ap.add_argument("--sugerir-tamanhos", action="store_true",
+                    help="somente sondas curtas; sugere entradas desta máquina sem aprovar nem aplicar ajustes")
+    args = ap.parse_args()
+    maquina = nome_maquina(args.maquina)
+    rel = verificar(maquina, carregar_config(maquina), args.sugerir_tamanhos)
+    destino = "sugestoes.json" if args.sugerir_tamanhos else "verificacao.json"
+    escrever_json(pasta_resultados(maquina) / destino, rel)
+    for erro in rel["problemas"]:
+        print("PROBLEMA:", erro)
+    if not rel["aprovado"]:
+        if rel["sugestoes"]:
+            print("Sugestões estimadas, sem aplicar no config e sem aprovação experimental:")
+            print(json.dumps({"ajustes_por_maquina": {maquina: {"benchmarks": rel["sugestoes"]}}}, indent=2))
+            if not rel.get("sugestao_palavras_cabe_ram", False):
+                print("Os tamanhos sugeridos de palavras NÃO cabem com a folga de RAM. Não os execute.")
+                print("Reveja máquina/perfil/entradas; o perfil de outro colega não é uma solução automática.")
+        if args.sugerir_tamanhos and rel.get("somente_sugestoes"):
+            print("RESULTADO: somente sugestões. A verificação completa ainda é obrigatória; nada foi aplicado.")
+            return
+        raise SystemExit(f"RESULTADO: reprovado. Os detalhes estão em {destino}.")
+    print(f"Estimativa de duração: ~{rel['estimativa_horas']:.1f} h, incluindo montar as entradas aproximadamente.")
+    print("RESULTADO: tudo certo. Confirme as condições com a pessoa antes da rodada completa.")
 
 
 if __name__ == "__main__":

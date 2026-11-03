@@ -1,6 +1,8 @@
 # Resumo do enunciado — Trabalho IV (Aula 50)
 
-Fonte: `instrucoes.txt` e slides da aula 50 (Prof. Vinícius Garcia Pinto).
+Fonte conferida em 03/11/2026: `semana-29-aula-50-B-ava-1.pdf`, páginas físicas
+11–18 (slides 4/34–11/34), Prof. Vinícius Garcia Pinto. Veja a
+[auditoria por requisito](AUDITORIA-REQUISITOS-2026-11-03.md), com evidências e pendências.
 
 - **Grupo:** até 3 alunos.
 - **Prazo:** AVA, até 30/10/2026 23h55. **Peso:** 50% da N4.

@@ -1,6 +1,8 @@
 # Python
 __pycache__/
 *.py[cod]
+# Runtime Windows do PyArmor faz parte da entrega de cada máquina.
+!ofuscado/**/pyarmor_runtime_*/pyarmor_runtime.pyd
 .venv/
 venv/
 *.egg-info/

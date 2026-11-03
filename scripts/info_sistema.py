@@ -14,9 +14,18 @@ import sys
 from pathlib import Path
 
 from comum import FERRAMENTAS, nome_maquina, pasta_resultados
+from comum import agora, perfil_energia
+import json
 
 
 def cpu():
+    if sys.platform == "win32":
+        try:
+            import winreg
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"HARDWARE\DESCRIPTION\System\CentralProcessor\0") as k:
+                return winreg.QueryValueEx(k, "ProcessorNameString")[0].strip()
+        except OSError:
+            pass
     try:
         for linha in Path("/proc/cpuinfo").read_text().splitlines():
             if linha.startswith("model name"):
@@ -89,6 +98,8 @@ def main():
     linhas = [
         f"# Ambiente de teste — {maquina}",
         f"- SO: {platform.platform()}",
+        f"- Arquitetura: {platform.machine()} / Python {platform.architecture()[0]}",
+        f"- Coleta (com fuso): {agora()}",
         f"- CPU: {cpu()} ({nucleos()})",
         f"- Memória: {memoria()}",
         f"- Governor de CPU: {governor()}",
@@ -96,12 +107,14 @@ def main():
         f"- Python: {sys.version.split()[0]} ({sys.executable})",
         f"- PyArmor: {versao('pyarmor')}",
         f"- python-minifier: {versao('pyminify')}",
+        f"- Perfil de energia observado: {json.dumps(perfil_energia(), ensure_ascii=False)}",
     ]
     pasta = pasta_resultados(maquina)
     pasta.mkdir(parents=True, exist_ok=True)
-    (pasta / "sistema.md").write_text("\n".join(linhas) + "\n", encoding="utf-8")
+    destino = pasta / ("sistema-atual.md" if (pasta / "raw.csv").exists() else "sistema.md")
+    destino.write_text("\n".join(linhas) + "\n", encoding="utf-8")
     print("\n".join(linhas))
-    print(f"\nescrito: {pasta / 'sistema.md'}")
+    print(f"\nescrito: {destino} (o ambiente de uma rodada existente é preservado)")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,122 @@
+{
+  "versao": 1,
+  "data": "2026-11-03T14:51:04-03:00",
+  "maquina": "pedro",
+  "aprovado": false,
+  "erros": [
+    "linha 14: palavras original abaixo de 20 s",
+    "linha 18: palavras original abaixo de 20 s",
+    "linha 22: palavras original abaixo de 20 s",
+    "linha 38: palavras original abaixo de 20 s",
+    "linha 42: palavras original abaixo de 20 s",
+    "linha 46: palavras original abaixo de 20 s",
+    "linha 62: palavras original abaixo de 20 s",
+    "linha 66: palavras original abaixo de 20 s",
+    "linha 70: palavras original abaixo de 20 s",
+    "linha 86: palavras original abaixo de 20 s",
+    "linha 90: palavras original abaixo de 20 s",
+    "linha 94: palavras original abaixo de 20 s",
+    "linha 110: palavras original abaixo de 20 s",
+    "linha 114: palavras original abaixo de 20 s",
+    "linha 118: palavras original abaixo de 20 s",
+    "linha 134: palavras original abaixo de 20 s",
+    "linha 138: palavras original abaixo de 20 s",
+    "linha 142: palavras original abaixo de 20 s",
+    "linha 158: palavras original abaixo de 20 s",
+    "linha 162: palavras original abaixo de 20 s",
+    "linha 166: palavras original abaixo de 20 s",
+    "linha 182: palavras original abaixo de 20 s",
+    "linha 186: palavras original abaixo de 20 s",
+    "linha 190: palavras original abaixo de 20 s",
+    "linha 206: palavras original abaixo de 20 s",
+    "linha 210: palavras original abaixo de 20 s",
+    "linha 214: palavras original abaixo de 20 s",
+    "linha 230: palavras original abaixo de 20 s",
+    "linha 234: palavras original abaixo de 20 s",
+    "linha 238: palavras original abaixo de 20 s"
+  ],
+  "avisos": [
+    "rodada legada: sem manifesto de Python/fontes/perfil; proveniência não verificável"
+  ],
+  "linhas": 240,
+  "esperadas": 240,
+  "faltantes": 0,
+  "minimos_originais_s": {
+    "matrizes": 26.263,
+    "palavras": 4.147
+  },
+  "config": {
+    "repeticoes": 10,
+    "tamanho_minimo_segundos": 20,
+    "fator_entre_tamanhos": 1.5,
+    "benchmarks": {
+      "matrizes": {
+        "arquivo": "matrizes.py",
+        "expoente_custo": 3,
+        "tamanhos": [
+          560,
+          840,
+          1264
+        ]
+      },
+      "palavras": {
+        "arquivo": "palavras.py",
+        "expoente_custo": 1,
+        "tamanhos": [
+          50000000,
+          80000000,
+          128000000
+        ]
+      }
+    },
+    "ofuscadores": {
+      "original": {
+        "descricao": "Baseline sem ofuscação (src/)",
+        "diretorio": "src"
+      },
+      "minifier-renomear": {
+        "descricao": "python-minifier: remove comentários/docstrings e renomeia identificadores",
+        "modo": "arquivo",
+        "cmd": [
+          "pyminify",
+          "--rename-globals",
+          "--output",
+          "{saida}",
+          "{entrada}"
+        ]
+      },
+      "pyarmor-basico": {
+        "descricao": "PyArmor com opções padrão",
+        "modo": "diretorio",
+        "cmd": [
+          "pyarmor",
+          "gen",
+          "-O",
+          "{saida}",
+          "{entradas}"
+        ]
+      },
+      "pyarmor-forte": {
+        "descricao": "PyArmor trial: módulo+funções ofuscados, JIT, modo privado e asserts (obf-code 2/mix-str exigem licença paga)",
+        "modo": "diretorio",
+        "cmd": [
+          "pyarmor",
+          "gen",
+          "--obf-module",
+          "1",
+          "--obf-code",
+          "1",
+          "--enable",
+          "jit",
+          "--private",
+          "--assert-call",
+          "--assert-import",
+          "-O",
+          "{saida}",
+          "{entradas}"
+        ]
+      }
+    },
+    "ajustes_por_maquina": {}
+  }
+}
