@@ -29,6 +29,7 @@ class ProtocoloTest(unittest.TestCase):
         self.root.relative_to(base.resolve())  # confere o alvo antes da limpeza recursiva
         self.addCleanup(self.temp.cleanup)
         self.cfg = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
+        self.cfg.pop("excecoes_duracao", None)  # testes de 20 s partem da regra sem exceção
         self.cfg["benchmarks"]["matrizes"]["tamanhos"] = [8, 16, 24]
         self.cfg["benchmarks"]["palavras"]["tamanhos"] = [800, 1200, 1800]
         for name, value in [("RAIZ", self.root), ("CONFIG", self.root/"config.json"),
@@ -138,6 +139,64 @@ class ProtocoloTest(unittest.TestCase):
         self.assertFalse(rel["aprovado"])
         self.assertTrue(any("palavras" in e and "< 20" in e for e in rel["problemas"]))
         self.assertFalse(any(m["etapa"]=="maior_real" for m in rel["medicoes"]))
+
+    EXCECAO = {"piso_s": 1, "motivo": "RAM do corpus", "fonte": "professor, relato do grupo"}
+
+    def test_excecao_dispensa_20s_so_no_benchmark_indicado(self):
+        self.cfg["excecoes_duracao"] = {"palavras": dict(self.EXCECAO)}
+        rel, _ = self.falso_preflight(minimo_p=3.0)
+        self.assertTrue(rel["aprovado"], rel["problemas"])
+        self.assertTrue(any("EXCEÇÃO" in a and "palavras" in a for a in rel["avisos"]))
+        rel, _ = self.falso_preflight(minimo_m=3.0)
+        self.assertFalse(rel["aprovado"])
+        self.assertTrue(any("matrizes" in e and "< 20" in e for e in rel["problemas"]))
+
+    def test_excecao_mantem_piso_contra_tempo_desprezivel(self):
+        self.cfg["excecoes_duracao"] = {"palavras": dict(self.EXCECAO)}
+        rel, _ = self.falso_preflight(minimo_p=0.5)
+        self.assertFalse(rel["aprovado"])
+        self.assertTrue(any("palavras" in e and "< 1" in e for e in rel["problemas"]))
+
+    def test_excecao_exige_motivo_fonte_e_piso_valido(self):
+        for exc in ({"piso_s": 0.0001, "motivo": "m", "fonte": "f"},
+                    {"piso_s": 20, "motivo": "m", "fonte": "f"},
+                    {"piso_s": 1, "motivo": "", "fonte": "f"},
+                    {"piso_s": 1, "motivo": "m"}):
+            cfg = copy.deepcopy(self.cfg)
+            cfg["excecoes_duracao"] = {"palavras": exc}
+            self.assertTrue(comum.validar_config(cfg), exc)
+        cfg = copy.deepcopy(self.cfg)
+        cfg["excecoes_duracao"] = {"inexistente": dict(self.EXCECAO)}
+        self.assertTrue(comum.validar_config(cfg))
+        cfg["excecoes_duracao"] = {"palavras": dict(self.EXCECAO)}
+        self.assertEqual(comum.validar_config(cfg), [])
+
+    def test_excecao_faz_parte_da_assinatura(self):
+        c1 = comum.assinatura(comum.contexto_experimento("teste", self.cfg))
+        self.cfg["excecoes_duracao"] = {"palavras": dict(self.EXCECAO)}
+        c2 = comum.assinatura(comum.contexto_experimento("teste", self.cfg))
+        self.assertNotEqual(c1, c2)
+
+    def rodada_palavras_3s(self):
+        self.preflight()
+        def fake(d, f, n, **kwargs):
+            return self.resultado(3.0 if f == "palavras.py" else 21)
+        with patch.object(runner, "executar_detalhado", side_effect=fake), \
+             patch("sys.stdout", new_callable=io.StringIO):
+            runner.rodar("teste", self.cfg)
+
+    def test_rodada_com_excecao_aceita_palavras_curto_e_audita(self):
+        self.cfg["excecoes_duracao"] = {"palavras": dict(self.EXCECAO)}
+        self.gravar_config()
+        self.rodada_palavras_3s()
+        rel = auditar.auditar("teste")
+        self.assertTrue(rel["aprovado"], rel["erros"])
+        self.assertEqual(rel["excecoes_duracao"]["palavras"]["piso_s"], 1)
+
+    def test_rodada_sem_excecao_interrompe_com_palavras_curto(self):
+        with self.assertRaises(RuntimeError):
+            self.rodada_palavras_3s()
+        self.assertTrue((self.pasta / "falha.json").exists())
 
     def test_preflight_reprova_matrizes_abaixo_20(self):
         rel, _ = self.falso_preflight(minimo_m=19.999)

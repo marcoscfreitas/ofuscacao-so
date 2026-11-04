@@ -5,9 +5,11 @@ própria máquina, e juntam os resultados**. Serve para pessoas e para assistent
 de IA que estejam ajudando. Leia inteiro antes de rodar qualquer coisa.
 
 Leia também os [achados e decisões entre máquinas](DECISOES-EXPERIMENTO.md).
-Eles registram uma pendência real dos 20 s e explicam por que um perfil de CPU
+Eles registram a pendência dos 20 s no `palavras` (resolvida pela exceção de 04/11, descrita abaixo) e explicam por que um perfil de CPU
 ou tamanho testado em um computador não deve ser copiado automaticamente.
 O fluxo compartilhado foi corrigido na [auditoria do PDF de 03/11](AUDITORIA-REQUISITOS-2026-11-03.md).
+
+**Atualização de 04/11/2026 — exceção do `palavras`:** um integrante consultou o professor, que respondeu que o `palavras` pode ficar abaixo de 20 s: o mínimo existe só para evitar tempos desprezíveis (como 0,0001 s). O repositório registra isso em `excecoes_duracao` do `config.json`, com piso de 1 s para o original no menor tamanho. O `matrizes` continua exigindo 20 s. A resposta chegou por relato; **anexe a mensagem original ao relatório**.
 
 ## 1. Ideia geral
 
@@ -78,7 +80,8 @@ python scripts/verificar.py    --maquina SEUNOME
 O `verificar.py` é a **checagem pré-voo**. Ele não altera configuração ou energia e confere:
 
 1. se cada configuração existe e seus testes curtos imprimem "ok";
-2. se as menores entradas reais dos **dois** originais levam pelo menos 20 s;
+2. se a menor entrada real do `matrizes` leva pelo menos 20 s; no `palavras` basta o piso da
+   exceção (`excecoes_duracao`, 1 s), e a medição aparece como AVISO no resultado;
 3. se há reserva de RAM estimada e se o maior palavras passa numa sonda real;
 4. se configuração, Python, arquivos e política de energia permanecem constantes;
 5. uma estimativa de duração incluindo a montagem das entradas aproximadamente.
@@ -109,7 +112,8 @@ experimental; não copie limites de CPU de pedro e não altere `src/`.
 | `... não existe -> ofuscar.py` | Rode o `ofuscar.py` do passo 4.2. |
 | `<config>/<arquivo> falhou` | Rode o comando manual que ele sugere e leia o erro. Causas prováveis: PyArmor sem suporte ao seu SO/Python (veja 6), ou venv não ativado. **Registre o erro** — é conteúdo do relatório ("o que não funcionou"). |
 | `RAM livre insuficiente ...` | Feche programas, examine as sugestões e sua margem de RAM. O fluxo usa pelo menos 80 B/palavra como estimativa conservadora e mede o pico real. Não execute uma sugestão que não caiba. |
-| `matrizes` ou `palavras ... < 20 s exigidos` | Examine a sugestão e a RAM, aplique apenas o ajuste do seu id e verifique novamente. |
+| `matrizes ... < 20 s exigidos` | Examine a sugestão e a RAM, aplique apenas o ajuste do seu id e verifique novamente. |
+| `palavras ... < 1 s exigidos` | Abaixo do piso da exceção: aumente a entrada dentro da RAM. Acima de 1 s, o `palavras` é aceito mesmo abaixo de 20 s. |
 
 ### 4.4 Preparar a noite de medição
 
@@ -171,7 +175,8 @@ para estudar dados legados ou incompletos, use `--exploratorio`, que identifica 
 pendência nas saídas. Auditoria sem cargas: `python scripts/auditar.py --maquina SEUNOME`.
 
 Antes do commit, confira dez repetições únicas por caso, saída correta, retorno
-zero e duração de pelo menos 20 s no original dos dois benchmarks. Na configuração
+zero e duração de pelo menos 20 s no original do `matrizes` (e pelo menos o piso da exceção no
+`palavras`). Na configuração
 atual, a rodada completa tem 240 casos. Gráficos exploratórios não comprovam
 uma rodada completa ou conforme.
 

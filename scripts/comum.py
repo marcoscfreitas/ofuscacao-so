@@ -88,12 +88,30 @@ def validar_config(cfg):
             erros.append(f"{nome}: pelo menos três tamanhos positivos, múltiplos de 8")
         elif any(b < a * max(1.5, fator) for a, b in zip(ns, ns[1:])):
             erros.append(f"{nome}: cada tamanho deve crescer pelo menos {max(1.5, fator):g} vezes")
+    for nome, exc in cfg.get("excecoes_duracao", {}).items():
+        piso = exc.get("piso_s") if isinstance(exc, dict) else None
+        if nome not in cfg.get("benchmarks", {}):
+            erros.append(f"excecoes_duracao: benchmark desconhecido {nome!r}")
+        elif (not isinstance(piso, (int, float)) or isinstance(piso, bool) or not math.isfinite(piso)
+              or not 1 <= piso < alvo):
+            erros.append(f"excecoes_duracao.{nome}: piso_s deve ficar entre 1 e {alvo} s")
+        elif not all(isinstance(exc.get(k), str) and exc[k].strip() for k in ("motivo", "fonte")):
+            erros.append(f"excecoes_duracao.{nome}: informe motivo e fonte da aceitação")
     configs = cfg.get("ofuscadores", {})
     if "original" not in configs or len([c for c in configs if c != "original"]) < 2:
         erros.append("são necessários original e pelo menos dois ofuscadores")
     if configs.get("original", {}).get("diretorio") != "src":
         erros.append("o original deve executar os arquivos intactos de src")
     return erros
+
+
+def duracao_minima(cfg, bench):
+    """Duração mínima (s) do original no menor tamanho e a exceção aceita, se houver.
+
+    Sem exceção, vale tamanho_minimo_segundos. Uma exceção em excecoes_duracao
+    troca esse mínimo pelo piso_s, que evita tempos desprezíveis."""
+    exc = cfg.get("excecoes_duracao", {}).get(bench)
+    return (exc["piso_s"], exc) if exc else (cfg["tamanho_minimo_segundos"], None)
 
 
 def multiplo_de_8_acima(n):

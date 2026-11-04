@@ -41,5 +41,19 @@
     }
   },
 
-  "ajustes_por_maquina": {}
+  "excecoes_duracao": {
+    "palavras": {
+      "piso_s": 1,
+      "motivo": "O palavras guarda o corpus inteiro na RAM (~55-63 B/palavra); 20 s exigiriam entradas que não cabem na memória das máquinas do grupo.",
+      "fonte": "Professor, consultado por um integrante do grupo (relato ao grupo em 04/11/2026): o mínimo de 20 s serve só para evitar tempos desprezíveis, como 0,0001 s. Anexar a mensagem original ao relatório."
+    }
+  },
+
+  "ajustes_por_maquina": {
+    "marcos": {
+      "benchmarks": {
+        "matrizes": { "tamanhos": [608, 912, 1368] }
+      }
+    }
+  }
 }

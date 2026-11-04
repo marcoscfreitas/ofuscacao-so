@@ -10,6 +10,12 @@ originais, o runner protege retomadas e há uma auditoria compartilhada. Consult
 a [conferência de requisitos](AUDITORIA-REQUISITOS-2026-11-03.md) e o guia atualizado
 para o procedimento atual. A nova rodada de pedro continua adiada.
 
+**Atualização de 04/11/2026 — exceção do `palavras`:** um integrante consultou o professor, que respondeu que o `palavras` pode ficar abaixo de 20 s: o mínimo existe só para evitar tempos desprezíveis (como 0,0001 s). O repositório registra isso em `excecoes_duracao` do `config.json`, com piso de 1 s para o original no menor tamanho. O `matrizes` continua exigindo 20 s. A resposta chegou por relato; **anexe a mensagem original ao relatório**.
+Consequência: `verificar.py`, `rodar_benchmarks.py` e `auditar.py` usam `duracao_minima()`
+(`scripts/comum.py`), que devolve 20 s ou o piso da exceção. A exceção entra na assinatura do
+contexto da rodada e aparece como AVISO no pré-voo e em `auditoria.json`. O restante deste
+documento é o registro de 29/10, anterior a essa resposta.
+
 ## 1. O problema identificado
 
 O enunciado exige pelo menos 20 segundos na menor entrada do original, em

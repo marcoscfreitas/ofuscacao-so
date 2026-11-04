@@ -5,7 +5,7 @@ import csv
 import json
 import math
 
-from comum import (agora, assinatura, carregar_config, escrever_json, hash_csv,
+from comum import (agora, assinatura, carregar_config, duracao_minima, escrever_json, hash_csv,
                    maquinas_com_resultados, nome_maquina, pasta_resultados, validar_config)
 
 
@@ -54,8 +54,9 @@ def auditar(maquina, cfg=None, parcial=False):
             if r["config"] == "original" and math.isfinite(interno) and interno > 0:
                 bench = r["benchmark"]
                 minimos[bench] = min(minimos.get(bench, float("inf")), interno)
-                if interno < cfg["tamanho_minimo_segundos"]:
-                    erros.append(f"linha {i}: {bench} original abaixo de {cfg['tamanho_minimo_segundos']} s")
+                minimo = duracao_minima(cfg, bench)[0]
+                if interno < minimo:
+                    erros.append(f"linha {i}: {bench} original abaixo de {minimo} s")
         except (KeyError, TypeError, ValueError):
             erros.append(f"linha {i}: registro incompleto ou inválido")
     faltantes = len(esperado - vistos)
@@ -78,7 +79,8 @@ def auditar(maquina, cfg=None, parcial=False):
             erros.append("CSV mudou após a conclusão registrada")
     return dict(versao=1, data=agora(), maquina=maquina, aprovado=not erros and not avisos,
                 erros=erros, avisos=avisos, linhas=len(linhas), esperadas=len(esperado),
-                faltantes=faltantes, minimos_originais_s=minimos, config=cfg)
+                faltantes=faltantes, minimos_originais_s=minimos,
+                excecoes_duracao=cfg.get("excecoes_duracao", {}), config=cfg)
 
 
 def main():

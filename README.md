@@ -147,7 +147,8 @@ seu, pois o runtime do PyArmor depende de SO, arquitetura e versão do Python.
 ## Metodologia (exigências do enunciado)
 
 - ≥ 3 tamanhos de entrada, cada um ≥ 50% maior que o anterior; menor entrada do
-  original ≥ 20 s nos dois benchmarks, conferidos por execução real no pré-voo.
+  original ≥ 20 s no `matrizes`, conferido por execução real no pré-voo. No `palavras` vale a
+  exceção aceita pelo professor (piso de 1 s; ver abaixo).
 - 10 repetições por caso, intercaladas entre configurações.
 - Tempo medido é o impresso pelo próprio benchmark (`time: X seconds`, só a
   parte computacional); o tempo total do processo também é gravado, e a diferença
@@ -160,10 +161,16 @@ seu, pois o runtime do PyArmor depende de SO, arquitetura e versão do Python.
 
 | Benchmark | Tamanhos | Observação |
 |---|---|---|
-| matrizes | 560, 840, 1264 (fator 1,5) | ~21 s no original no menor tamanho (Ryzen 5 5500) |
+| matrizes | 560, 840, 1264 (fator 1,5) | ~21 s no original no menor tamanho (Ryzen 5 5500); marcos usa 608, 912, 1368 por margem |
 | palavras | 50M, 80M, 128M (fator 1,6) | **não chega a 20 s** na referência (≈ 8 s no maior); validar em cada máquina |
 
-**Pendência do `palavras`:** esses tamanhos globais não garantem os 20 s exigidos.
+**Atualização de 04/11/2026:** o professor, consultado por um integrante, aceitou que o
+`palavras` fique abaixo de 20 s (o mínimo serve só para evitar tempos desprezíveis). A exceção
+está em `excecoes_duracao` no `config.json`, com piso de 1 s; o `matrizes` segue ≥ 20 s.
+A mensagem original do professor deve ser anexada ao relatório. O texto abaixo é o histórico
+que levou à consulta.
+
+**Pendência do `palavras` (histórico):** esses tamanhos globais não garantem os 20 s exigidos.
 O corpus fica inteiro na RAM; os ~56 bytes por palavra são uma estimativa que
 pode subestimar o pico em outra configuração. Registrar a limitação não constitui
 dispensa do requisito. A primeira rodada de pedro confirmou a pendência; foram

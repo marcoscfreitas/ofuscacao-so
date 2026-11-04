@@ -9,6 +9,8 @@ SHA-256 do arquivo consultado:
 `eec41e3a0aabf83961ea2e01978d11cf30216839f01774ce8b825e126e125d9f`.
 O PDF permanece fora do repositório; os colegas podem obtê-lo no AVA.
 
+**Atualização de 04/11/2026 — exceção do `palavras`:** um integrante consultou o professor, que respondeu que o `palavras` pode ficar abaixo de 20 s: o mínimo existe só para evitar tempos desprezíveis (como 0,0001 s). O repositório registra isso em `excecoes_duracao` do `config.json`, com piso de 1 s para o original no menor tamanho. O `matrizes` continua exigindo 20 s. A resposta chegou por relato; **anexe a mensagem original ao relatório**.
+
 ## Resultado da conferência
 
 **O trabalho ainda não atende integralmente ao enunciado.** Há uma rodada de

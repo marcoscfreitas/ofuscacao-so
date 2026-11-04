@@ -2,7 +2,8 @@
 """Pré-voo por máquina: duração real dos dois originais e RAM do maior palavras.
 
 Grava verificacao.json; não muda config, energia, fontes ou resultados anteriores.
-Sugestões são estimativas: só se aprova uma entrada realmente medida >= 20 s.
+Sugestões são estimativas: só se aprova uma entrada realmente medida >= 20 s, salvo
+benchmarks com exceção registrada em excecoes_duracao (vale o piso_s dela).
 """
 import argparse
 import json
@@ -10,7 +11,7 @@ import math
 
 from comum import (BYTES_POR_PALAVRA, FOLGA_RAM, agora, assinatura,
                    carregar_config, contexto_experimento, diretorio_config,
-                   escrever_json, executar_detalhado, memoria_disponivel,
+                   duracao_minima, escrever_json, executar_detalhado, memoria_disponivel,
                    nome_maquina, pasta_resultados, reserva_memoria,
                    resultado_valido, tamanhos_progressivos, validar_config)
 
@@ -21,7 +22,7 @@ SONDA = {"matrizes": 200, "palavras": 5_000_000}
 def verificar(maquina, cfg, somente_sugestoes=False):
     problemas = validar_config(cfg)
     rel = dict(versao=1, maquina=maquina, data=agora(), aprovado=False,
-               problemas=problemas, medicoes=[], sugestoes={})
+               problemas=problemas, avisos=[], medicoes=[], sugestoes={})
     if problemas:
         return rel
     contexto = contexto_experimento(maquina, cfg)
@@ -91,9 +92,16 @@ def verificar(maquina, cfg, somente_sugestoes=False):
         if r is None:
             continue
         custos[bench] = (n, r)
-        if r["tempo_interno_s"] < alvo:
-            problemas.append(f"{bench} n={n}: {r['tempo_interno_s']:.3f} s < {alvo} s exigidos")
-            base = n * (alvo * 1.25 / r["tempo_interno_s"]) ** (1 / info["expoente_custo"])
+        minimo, excecao = duracao_minima(cfg, bench)
+        t = r["tempo_interno_s"]
+        if excecao and t < alvo:
+            aviso = (f"{bench} n={n}: {t:.3f} s < {alvo} s; EXCEÇÃO aceita (piso {minimo} s): "
+                     f"{excecao['motivo']} Fonte: {excecao['fonte']}")
+            rel["avisos"].append(aviso)
+            print("AVISO:", aviso, flush=True)
+        if t < minimo:
+            problemas.append(f"{bench} n={n}: {t:.3f} s < {minimo} s exigidos")
+            base = n * (minimo * 1.25 / t) ** (1 / info["expoente_custo"])
             rel["sugestoes"][bench] = {"tamanhos": tamanhos_progressivos(base, fator)}
 
     print("[4/4] pico REAL de memória na maior entrada de palavras", flush=True)

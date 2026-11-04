@@ -30,7 +30,10 @@ python scripts/analisar.py --maquina ID
   do maior palavras; abaixo de 20 s reprova. O resultado fica em `verificacao.json`.
   Para escolher entradas por máquina, `--sugerir-tamanhos` faz somente sondas curtas
   e não aprova nem aplica ajustes. Audite as dez repetições por caso com `auditar.py`.
-  Não declarar exceção aceita apenas por estar documentada.
+  **Exceção aceita (04/11/2026):** o professor liberou o `palavras` abaixo de 20 s (o mínimo
+  só evita tempos desprezíveis); vale somente o que está em `excecoes_duracao` no `config.json`
+  (piso de 1 s). O `matrizes` continua ≥ 20 s. Não crie outras exceções nem altere o piso
+  sem a pessoa pedir.
 - **Retomada exige a mesma condição.** O runner registra `execucao.json` e bloqueia
   troca de Python, fontes, configuração ou perfil. Dados legados sem manifesto
   só podem ser analisados com `--exploratorio`; não invente metadados para aprová-los.

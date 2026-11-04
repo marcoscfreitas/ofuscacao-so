@@ -10,7 +10,7 @@ import platform
 
 from auditar import auditar
 from comum import (agora, assinatura, carregar_config, contexto_experimento, diretorio_config,
-                   escrever_json, executar_detalhado, hash_csv, memoria_disponivel,
+                   duracao_minima, escrever_json, executar_detalhado, hash_csv, memoria_disponivel,
                    nome_maquina, pasta_resultados, resultado_valido, validar_config)
 
 CAMPOS = ["timestamp", "maquina", "python", "config", "benchmark", "tamanho", "rep",
@@ -85,7 +85,7 @@ def rodar(maquina, cfg, retomar=False):
                                             tempo_total_s=round(r["tempo_total_s"], 3),
                                             saida_ok=int(r["saida_ok"]), returncode=r["returncode"]))
                             f.flush()
-                            if not resultado_valido(r) or (config == "original" and t < cfg["tamanho_minimo_segundos"]):
+                            if not resultado_valido(r) or (config == "original" and t < duracao_minima(cfg, bench)[0]):
                                 escrever_json(pasta / "falha.json", dict(config=config, benchmark=bench, tamanho=n, rep=rep, **r))
                                 raise RuntimeError("Caso reprovado: saída/retorno/tempo ou RAM. Rodada interrompida; detalhes em falha.json.")
         if assinatura(contexto_experimento(maquina, cfg)) != chave:

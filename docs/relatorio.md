@@ -56,8 +56,9 @@ _Complementar os tamanhos e o controle de cada plataforma, identificando Python,
 perfil de energia e ajustes por máquina (ver [GUIA-GRUPO.md](GUIA-GRUPO.md))._
 
 O tempo adotado é o `time: X seconds` do próprio programa, que mede a parte
-computacional. O tempo total do processo inclui construir a entrada. A exigência
-de 20 s deve ser conferida nos dois originais em cada máquina/perfil; os tamanhos
+computacional. O tempo total do processo inclui construir a entrada. Exceção aceita pelo professor
+em 04/11/2026: o `palavras` pode ficar abaixo de 20 s (piso de 1 s). A exigência
+de 20 s no `matrizes` deve ser conferida nos dois originais em cada máquina/perfil; os tamanhos
 globais e o “tudo certo” do verificador não garantem esse resultado. Documentar
 uma duração menor não representa dispensa do requisito.
 
@@ -129,7 +130,9 @@ Questões a completar com os dados finais:
 - Problemas de instalação (por máquina):
 - O que não funcionou de maneira alguma: PyArmor trial recusa `--obf-code 2`, `--mix-str`,
   `--enable rft|bcc` (`out of license`); `pyarmor-forte` usa só opções aceitas pela trial.
-- Tamanhos do `palavras` limitados pela RAM (< 20 s no original):
+- Tamanhos do `palavras` limitados pela RAM (< 20 s no original): o professor aceitou a exceção
+  (04/11/2026, relato de um integrante; **anexar a mensagem original**), registrada em
+  `excecoes_duracao` no `config.json` com piso de 1 s. O `matrizes` segue ≥ 20 s.
 - Decisões tomadas:
 
 Na máquina de pedro, a instalação terminou com o aviso
