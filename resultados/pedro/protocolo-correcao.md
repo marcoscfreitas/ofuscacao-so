@@ -1,5 +1,14 @@
 # Protocolo da repetição — pedro
 
+**Atualização de 05/11/2026:** a nova rodada foi concluída e aprovada, com 240
+execuções, no perfil de alto desempenho registrado em `sistema.md` e
+`execucao.json`. O perfil de 1200 MHz descrito abaixo **não foi utilizado**.
+Palavras foi aceito pela exceção de duração do `config.json` (piso de 1 s).
+O estado atual está em [rodada.md](rodada.md). O restante deste documento é o
+registro histórico da preparação de 29/10 e da revisão de 03/11.
+
+## Registro histórico da preparação
+
 **Atualização de 03/11/2026:** este é o registro da preparação local de 29/10.
 O fluxo compartilhado foi revisado na [auditoria do PDF](../../docs/AUDITORIA-REQUISITOS-2026-11-03.md).
 Usar os scripts de `scripts/` e o guia atualizado; não depender do antigo supervisor

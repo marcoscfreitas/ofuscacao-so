@@ -1,0 +1,9 @@
+{
+  "destino": "C:\\Users\\pedro\\ofuscacao-so\\resultados\\pedro\\historico\\legado-20261104-235659\\raw.csv",
+  "sha256": "C073A4AD427C5F1BE677E7A8DB14B179E64D3A2C2EED9471F09859E261B1017A",
+  "origem": "C:\\Users\\pedro\\ofuscacao-so\\resultados\\pedro\\raw.csv",
+  "nota": "Rodada legada preservada. Nao foi criado manifesto retroativo para ela.",
+  "data": "2026-11-04T23:56:59.5626575-03:00",
+  "sha256_texto_utf8_normalizado": "7c49498e452957ac8aae91afa65d2ff42eef26e50d65ae0046751122014683f0",
+  "nota_hash": "sha256 registra os bytes no momento da preservacao; sha256_texto_utf8_normalizado permite conferir apos normalizacao de quebras de linha pelo Git."
+}

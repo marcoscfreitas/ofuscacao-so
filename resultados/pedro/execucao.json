@@ -1,0 +1,501 @@
+{
+  "versao": 1,
+  "inicio": "2026-11-04T23:58:14-03:00",
+  "contexto": {
+    "maquina": "pedro",
+    "python": "3.12.15",
+    "implementacao": "CPython",
+    "abi": "cpython-312",
+    "bits_python": 64,
+    "so": "Windows-10-10.0.19045-SP0",
+    "arquitetura": "AMD64",
+    "cpu": "Intel(R) Core(TM) i7-9700 CPU @ 3.00GHz",
+    "ram_total_bytes": 34280960000,
+    "perfil": {
+      "sistema": "Windows",
+      "plano": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c",
+      "ajustes_ac_dc": {
+        "PROCTHROTTLEMIN": [
+          100,
+          5
+        ],
+        "PROCTHROTTLEMAX": [
+          100,
+          100
+        ],
+        "PROCFREQMAX": [
+          0,
+          0
+        ],
+        "PERFBOOSTMODE": [
+          2,
+          2
+        ]
+      }
+    },
+    "perfil_declarado": "padrão do sistema",
+    "ferramentas": {
+      "pyarmor": "9.2.8",
+      "python-minifier": "3.4.0",
+      "psutil": "7.2.2",
+      "matplotlib": "3.11.2"
+    },
+    "config": {
+      "repeticoes": 10,
+      "tamanho_minimo_segundos": 20,
+      "fator_entre_tamanhos": 1.5,
+      "benchmarks": {
+        "matrizes": {
+          "arquivo": "matrizes.py",
+          "expoente_custo": 3,
+          "tamanhos": [
+            560,
+            840,
+            1264
+          ]
+        },
+        "palavras": {
+          "arquivo": "palavras.py",
+          "expoente_custo": 1,
+          "tamanhos": [
+            50000000,
+            80000000,
+            128000000
+          ]
+        }
+      },
+      "ofuscadores": {
+        "original": {
+          "descricao": "Baseline sem ofuscação (src/)",
+          "diretorio": "src"
+        },
+        "minifier-renomear": {
+          "descricao": "python-minifier: remove comentários/docstrings e renomeia identificadores",
+          "modo": "arquivo",
+          "cmd": [
+            "pyminify",
+            "--rename-globals",
+            "--output",
+            "{saida}",
+            "{entrada}"
+          ]
+        },
+        "pyarmor-basico": {
+          "descricao": "PyArmor com opções padrão",
+          "modo": "diretorio",
+          "cmd": [
+            "pyarmor",
+            "gen",
+            "-O",
+            "{saida}",
+            "{entradas}"
+          ]
+        },
+        "pyarmor-forte": {
+          "descricao": "PyArmor trial: módulo+funções ofuscados, JIT, modo privado e asserts (obf-code 2/mix-str exigem licença paga)",
+          "modo": "diretorio",
+          "cmd": [
+            "pyarmor",
+            "gen",
+            "--obf-module",
+            "1",
+            "--obf-code",
+            "1",
+            "--enable",
+            "jit",
+            "--private",
+            "--assert-call",
+            "--assert-import",
+            "-O",
+            "{saida}",
+            "{entradas}"
+          ]
+        }
+      },
+      "excecoes_duracao": {
+        "palavras": {
+          "piso_s": 1,
+          "motivo": "O palavras guarda o corpus inteiro na RAM (~55-63 B/palavra); 20 s exigiriam entradas que não cabem na memória das máquinas do grupo.",
+          "fonte": "Professor, consultado por um integrante do grupo (relato ao grupo em 04/11/2026): o mínimo de 20 s serve só para evitar tempos desprezíveis, como 0,0001 s. Anexar a mensagem original ao relatório."
+        }
+      }
+    },
+    "hashes": {
+      "src\\matrizes.py": "97214350d3e9f996b7e7330c81db4cbc5cbbc8801763f24dce229da8bcabf3cb",
+      "src\\palavras.py": "0b33fbd56eeb78fd7bebb6e5553a1e6a5f9d3229cfe63eef900095cb210fff46",
+      "ofuscado\\pedro\\minifier-renomear\\matrizes.py": "375390f5423e39563baa708064ef2ebc07d5ee42d3ffe0a688a0411d0e5d040b",
+      "ofuscado\\pedro\\minifier-renomear\\palavras.py": "43b1519bd21914dde242431c9431839f232b175c0385ffc516e9d96beafcdb54",
+      "ofuscado\\pedro\\pyarmor-basico\\matrizes.py": "3d1c829bcb7730a9463f28fc94349b22020c345e111edecc13540d7901a77a32",
+      "ofuscado\\pedro\\pyarmor-basico\\palavras.py": "11b19d6a31f152f494f028b33b2f2559d469ec0bb154e0ed0d472b4f59267bef",
+      "ofuscado\\pedro\\pyarmor-basico\\pyarmor_runtime_000000\\pyarmor_runtime.pyd": "d3cd9280808d8b75dc29e60b8ac4659c306a4f0867f5cf5bdc4d43be868b42db",
+      "ofuscado\\pedro\\pyarmor-basico\\pyarmor_runtime_000000\\__init__.py": "37c003f77c0471ca03bd9ee9d93faa88cf457c652f52b988bacb889a6f4fd741",
+      "ofuscado\\pedro\\pyarmor-forte\\matrizes.py": "ff9154af2574beb844d737d34bd6c6b0ba424a10c5ebc41fdb9a454420ae10d8",
+      "ofuscado\\pedro\\pyarmor-forte\\palavras.py": "8232909a63e72d057ce49b091ef91675b18044dcbfa6c7cbc98ff87e698eceec",
+      "ofuscado\\pedro\\pyarmor-forte\\pyarmor_runtime_000000\\pyarmor_runtime.pyd": "63c29c962f728d94232319b913da84d2afcd74a5f8d3bbc3727d1bc371ba1e96",
+      "ofuscado\\pedro\\pyarmor-forte\\pyarmor_runtime_000000\\__init__.py": "c0333fbbd21fc33a19f8b0dff6366d2b0605419d9edac656b3173b5d22d2f6f7",
+      "scripts\\comum.py": "f0693696b6f7f6c6cdac940a1596efb3ff3bbe1e4dd75fcbd6aca4127bc29630",
+      "scripts\\verificar.py": "47ff64ecd387e2dcc19be71bf205309bff8edf58b7198bbd6e12813b5e273855",
+      "scripts\\rodar_benchmarks.py": "470ec85216a1373ede70550b8df5816f1a08d6622c4e71796ae19c73c4244692"
+    }
+  },
+  "assinatura": "02f035e3f918130433f3a7786039ac805a20bd6b17534451a05ac15f63140355",
+  "condicoes_confirmadas": true,
+  "preflight": {
+    "versao": 1,
+    "maquina": "pedro",
+    "data": "2026-11-04T23:57:00-03:00",
+    "aprovado": true,
+    "problemas": [],
+    "avisos": [
+      "palavras n=50000000: 4.197 s < 20 s; EXCEÇÃO aceita (piso 1 s): O palavras guarda o corpus inteiro na RAM (~55-63 B/palavra); 20 s exigiriam entradas que não cabem na memória das máquinas do grupo. Fonte: Professor, consultado por um integrante do grupo (relato ao grupo em 04/11/2026): o mínimo de 20 s serve só para evitar tempos desprezíveis, como 0,0001 s. Anexar a mensagem original ao relatório."
+    ],
+    "medicoes": [
+      {
+        "config": "original",
+        "benchmark": "matrizes",
+        "tamanho": 64,
+        "etapa": "curto",
+        "tempo_interno_s": 0.044,
+        "tempo_total_s": 0.12177550000342308,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 64\r\nmultiply values are ok\r\ntime: 0.044 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 14348288
+      },
+      {
+        "config": "original",
+        "benchmark": "palavras",
+        "tamanho": 1000000,
+        "etapa": "curto",
+        "tempo_interno_s": 0.091,
+        "tempo_total_s": 0.28479630000219913,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 1000000\r\nword counts are ok\r\ntime: 0.091 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 70955008
+      },
+      {
+        "config": "minifier-renomear",
+        "benchmark": "matrizes",
+        "tamanho": 64,
+        "etapa": "curto",
+        "tempo_interno_s": 0.043,
+        "tempo_total_s": 0.1156254999950761,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 64\r\nmultiply values are ok\r\ntime: 0.043 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 14385152
+      },
+      {
+        "config": "minifier-renomear",
+        "benchmark": "palavras",
+        "tamanho": 1000000,
+        "etapa": "curto",
+        "tempo_interno_s": 0.089,
+        "tempo_total_s": 0.27991759999713395,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 1000000\r\nword counts are ok\r\ntime: 0.089 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 71032832
+      },
+      {
+        "config": "pyarmor-basico",
+        "benchmark": "matrizes",
+        "tamanho": 64,
+        "etapa": "curto",
+        "tempo_interno_s": 0.043,
+        "tempo_total_s": 0.11408880000089994,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 64\r\nmultiply values are ok\r\ntime: 0.043 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 15568896
+      },
+      {
+        "config": "pyarmor-basico",
+        "benchmark": "palavras",
+        "tamanho": 1000000,
+        "etapa": "curto",
+        "tempo_interno_s": 0.09,
+        "tempo_total_s": 0.2790833999970346,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 1000000\r\nword counts are ok\r\ntime: 0.090 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 73654272
+      },
+      {
+        "config": "pyarmor-forte",
+        "benchmark": "matrizes",
+        "tamanho": 64,
+        "etapa": "curto",
+        "tempo_interno_s": 0.041,
+        "tempo_total_s": 0.11328090000461088,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 64\r\nmultiply values are ok\r\ntime: 0.041 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 15691776
+      },
+      {
+        "config": "pyarmor-forte",
+        "benchmark": "palavras",
+        "tamanho": 1000000,
+        "etapa": "curto",
+        "tempo_interno_s": 0.106,
+        "tempo_total_s": 0.34055739999894286,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 1000000\r\nword counts are ok\r\ntime: 0.106 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 72142848
+      },
+      {
+        "config": "original",
+        "benchmark": "matrizes",
+        "tamanho": 200,
+        "etapa": "sonda",
+        "tempo_interno_s": 1.293,
+        "tempo_total_s": 1.3710422000003746,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 200\r\nmultiply values are ok\r\ntime: 1.293 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 16416768
+      },
+      {
+        "config": "original",
+        "benchmark": "palavras",
+        "tamanho": 5000000,
+        "etapa": "sonda",
+        "tempo_interno_s": 0.416,
+        "tempo_total_s": 1.2186503000048106,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 5000000\r\nword counts are ok\r\ntime: 0.416 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 297476096
+      },
+      {
+        "config": "original",
+        "benchmark": "matrizes",
+        "tamanho": 560,
+        "etapa": "menor_real",
+        "tempo_interno_s": 27.69,
+        "tempo_total_s": 27.78651169999648,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 560\r\nmultiply values are ok\r\ntime: 27.690 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 31776768
+      },
+      {
+        "config": "original",
+        "benchmark": "palavras",
+        "tamanho": 50000000,
+        "etapa": "menor_real",
+        "tempo_interno_s": 4.197,
+        "tempo_total_s": 11.534440499999619,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 50000000\r\nword counts are ok\r\ntime: 4.197 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 2999627776
+      },
+      {
+        "config": "original",
+        "benchmark": "palavras",
+        "tamanho": 128000000,
+        "etapa": "maior_real",
+        "tempo_interno_s": 10.789,
+        "tempo_total_s": 29.884858199999144,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 128000000\r\nword counts are ok\r\ntime: 10.789 seconds\r\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 7682629632
+      }
+    ],
+    "sugestoes": {
+      "matrizes": {
+        "tamanhos": [
+          544,
+          816,
+          1224
+        ]
+      },
+      "palavras": {
+        "tamanhos": [
+          300480776,
+          450721168,
+          676081752
+        ]
+      }
+    },
+    "contexto": {
+      "maquina": "pedro",
+      "python": "3.12.15",
+      "implementacao": "CPython",
+      "abi": "cpython-312",
+      "bits_python": 64,
+      "so": "Windows-10-10.0.19045-SP0",
+      "arquitetura": "AMD64",
+      "cpu": "Intel(R) Core(TM) i7-9700 CPU @ 3.00GHz",
+      "ram_total_bytes": 34280960000,
+      "perfil": {
+        "sistema": "Windows",
+        "plano": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c",
+        "ajustes_ac_dc": {
+          "PROCTHROTTLEMIN": [
+            100,
+            5
+          ],
+          "PROCTHROTTLEMAX": [
+            100,
+            100
+          ],
+          "PROCFREQMAX": [
+            0,
+            0
+          ],
+          "PERFBOOSTMODE": [
+            2,
+            2
+          ]
+        }
+      },
+      "perfil_declarado": "padrão do sistema",
+      "ferramentas": {
+        "pyarmor": "9.2.8",
+        "python-minifier": "3.4.0",
+        "psutil": "7.2.2",
+        "matplotlib": "3.11.2"
+      },
+      "config": {
+        "repeticoes": 10,
+        "tamanho_minimo_segundos": 20,
+        "fator_entre_tamanhos": 1.5,
+        "benchmarks": {
+          "matrizes": {
+            "arquivo": "matrizes.py",
+            "expoente_custo": 3,
+            "tamanhos": [
+              560,
+              840,
+              1264
+            ]
+          },
+          "palavras": {
+            "arquivo": "palavras.py",
+            "expoente_custo": 1,
+            "tamanhos": [
+              50000000,
+              80000000,
+              128000000
+            ]
+          }
+        },
+        "ofuscadores": {
+          "original": {
+            "descricao": "Baseline sem ofuscação (src/)",
+            "diretorio": "src"
+          },
+          "minifier-renomear": {
+            "descricao": "python-minifier: remove comentários/docstrings e renomeia identificadores",
+            "modo": "arquivo",
+            "cmd": [
+              "pyminify",
+              "--rename-globals",
+              "--output",
+              "{saida}",
+              "{entrada}"
+            ]
+          },
+          "pyarmor-basico": {
+            "descricao": "PyArmor com opções padrão",
+            "modo": "diretorio",
+            "cmd": [
+              "pyarmor",
+              "gen",
+              "-O",
+              "{saida}",
+              "{entradas}"
+            ]
+          },
+          "pyarmor-forte": {
+            "descricao": "PyArmor trial: módulo+funções ofuscados, JIT, modo privado e asserts (obf-code 2/mix-str exigem licença paga)",
+            "modo": "diretorio",
+            "cmd": [
+              "pyarmor",
+              "gen",
+              "--obf-module",
+              "1",
+              "--obf-code",
+              "1",
+              "--enable",
+              "jit",
+              "--private",
+              "--assert-call",
+              "--assert-import",
+              "-O",
+              "{saida}",
+              "{entradas}"
+            ]
+          }
+        },
+        "excecoes_duracao": {
+          "palavras": {
+            "piso_s": 1,
+            "motivo": "O palavras guarda o corpus inteiro na RAM (~55-63 B/palavra); 20 s exigiriam entradas que não cabem na memória das máquinas do grupo.",
+            "fonte": "Professor, consultado por um integrante do grupo (relato ao grupo em 04/11/2026): o mínimo de 20 s serve só para evitar tempos desprezíveis, como 0,0001 s. Anexar a mensagem original ao relatório."
+          }
+        }
+      },
+      "hashes": {
+        "src\\matrizes.py": "97214350d3e9f996b7e7330c81db4cbc5cbbc8801763f24dce229da8bcabf3cb",
+        "src\\palavras.py": "0b33fbd56eeb78fd7bebb6e5553a1e6a5f9d3229cfe63eef900095cb210fff46",
+        "ofuscado\\pedro\\minifier-renomear\\matrizes.py": "375390f5423e39563baa708064ef2ebc07d5ee42d3ffe0a688a0411d0e5d040b",
+        "ofuscado\\pedro\\minifier-renomear\\palavras.py": "43b1519bd21914dde242431c9431839f232b175c0385ffc516e9d96beafcdb54",
+        "ofuscado\\pedro\\pyarmor-basico\\matrizes.py": "3d1c829bcb7730a9463f28fc94349b22020c345e111edecc13540d7901a77a32",
+        "ofuscado\\pedro\\pyarmor-basico\\palavras.py": "11b19d6a31f152f494f028b33b2f2559d469ec0bb154e0ed0d472b4f59267bef",
+        "ofuscado\\pedro\\pyarmor-basico\\pyarmor_runtime_000000\\pyarmor_runtime.pyd": "d3cd9280808d8b75dc29e60b8ac4659c306a4f0867f5cf5bdc4d43be868b42db",
+        "ofuscado\\pedro\\pyarmor-basico\\pyarmor_runtime_000000\\__init__.py": "37c003f77c0471ca03bd9ee9d93faa88cf457c652f52b988bacb889a6f4fd741",
+        "ofuscado\\pedro\\pyarmor-forte\\matrizes.py": "ff9154af2574beb844d737d34bd6c6b0ba424a10c5ebc41fdb9a454420ae10d8",
+        "ofuscado\\pedro\\pyarmor-forte\\palavras.py": "8232909a63e72d057ce49b091ef91675b18044dcbfa6c7cbc98ff87e698eceec",
+        "ofuscado\\pedro\\pyarmor-forte\\pyarmor_runtime_000000\\pyarmor_runtime.pyd": "63c29c962f728d94232319b913da84d2afcd74a5f8d3bbc3727d1bc371ba1e96",
+        "ofuscado\\pedro\\pyarmor-forte\\pyarmor_runtime_000000\\__init__.py": "c0333fbbd21fc33a19f8b0dff6366d2b0605419d9edac656b3173b5d22d2f6f7",
+        "scripts\\comum.py": "f0693696b6f7f6c6cdac940a1596efb3ff3bbe1e4dd75fcbd6aca4127bc29630",
+        "scripts\\verificar.py": "47ff64ecd387e2dcc19be71bf205309bff8edf58b7198bbd6e12813b5e273855",
+        "scripts\\rodar_benchmarks.py": "470ec85216a1373ede70550b8df5816f1a08d6622c4e71796ae19c73c4244692"
+      }
+    },
+    "assinatura": "02f035e3f918130433f3a7786039ac805a20bd6b17534451a05ac15f63140355",
+    "reserva_memoria_bytes": 3428096000,
+    "bytes_por_palavra": 80,
+    "ram_disponivel_bytes": 24780873728,
+    "ram_exigida_bytes": 12800000000,
+    "sugestao_palavras_cabe_ram": false,
+    "estimativa_horas": 5.5703590069115245
+  },
+  "estado": "concluido",
+  "atualizado": "2026-11-04T23:58:14-03:00",
+  "fim": "2026-11-05T05:48:54-03:00",
+  "csv_sha256": "e9e03e6924ab8fc18d0709403275c0d24b403bc6171b1b52237a4bf500f0317e"
+}
