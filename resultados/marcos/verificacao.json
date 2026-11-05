@@ -1,12 +1,12 @@
 {
   "versao": 1,
   "maquina": "marcos",
-  "data": "2026-11-04T09:32:16-03:00",
-  "aprovado": false,
-  "problemas": [
-    "RAM livre insuficiente ou não medida para o maior palavras; não executar a entrada grande"
+  "data": "2026-11-05T01:12:48-03:00",
+  "aprovado": true,
+  "problemas": [],
+  "avisos": [
+    "palavras n=50000000: 3.181 s < 20 s; EXCEÇÃO aceita (piso 1 s): O palavras guarda o corpus inteiro na RAM (~55-63 B/palavra); 20 s exigiriam entradas que não cabem na memória das máquinas do grupo. Fonte: Professor, consultado por um integrante do grupo (relato ao grupo em 04/11/2026): o mínimo de 20 s serve só para evitar tempos desprezíveis, como 0,0001 s. Anexar a mensagem original ao relatório."
   ],
-  "avisos": [],
   "medicoes": [
     {
       "config": "original",
@@ -14,181 +14,209 @@
       "tamanho": 64,
       "etapa": "curto",
       "tempo_interno_s": 0.029,
-      "tempo_total_s": 0.057410116999989214,
+      "tempo_total_s": 0.06613741000001028,
       "saida_ok": true,
       "returncode": 0,
       "stdout": "number of rows x cols: 64\nmultiply values are ok\ntime: 0.029 seconds\n",
       "stderr": "",
       "motivo": "",
-      "pico_memoria_bytes": 8896512
+      "pico_memoria_bytes": 9887744
     },
     {
       "config": "original",
       "benchmark": "palavras",
       "tamanho": 1000000,
       "etapa": "curto",
-      "tempo_interno_s": 0.065,
-      "tempo_total_s": 0.2311895039999854,
-      "saida_ok": true,
-      "returncode": 0,
-      "stdout": "number of words: 1000000\nword counts are ok\ntime: 0.065 seconds\n",
-      "stderr": "",
-      "motivo": "",
-      "pico_memoria_bytes": 66027520
-    },
-    {
-      "config": "minifier-renomear",
-      "benchmark": "matrizes",
-      "tamanho": 64,
-      "etapa": "curto",
-      "tempo_interno_s": 0.031,
-      "tempo_total_s": 0.05888088200001107,
-      "saida_ok": true,
-      "returncode": 0,
-      "stdout": "number of rows x cols: 64\nmultiply values are ok\ntime: 0.031 seconds\n",
-      "stderr": "",
-      "motivo": "",
-      "pico_memoria_bytes": 9015296
-    },
-    {
-      "config": "minifier-renomear",
-      "benchmark": "palavras",
-      "tamanho": 1000000,
-      "etapa": "curto",
-      "tempo_interno_s": 0.063,
-      "tempo_total_s": 0.231398965000011,
-      "saida_ok": true,
-      "returncode": 0,
-      "stdout": "number of words: 1000000\nword counts are ok\ntime: 0.063 seconds\n",
-      "stderr": "",
-      "motivo": "",
-      "pico_memoria_bytes": 66027520
-    },
-    {
-      "config": "pyarmor-basico",
-      "benchmark": "matrizes",
-      "tamanho": 64,
-      "etapa": "curto",
-      "tempo_interno_s": 0.03,
-      "tempo_total_s": 0.05931569300000206,
-      "saida_ok": true,
-      "returncode": 0,
-      "stdout": "number of rows x cols: 64\nmultiply values are ok\ntime: 0.030 seconds\n",
-      "stderr": "",
-      "motivo": "",
-      "pico_memoria_bytes": 9170944
-    },
-    {
-      "config": "pyarmor-basico",
-      "benchmark": "palavras",
-      "tamanho": 1000000,
-      "etapa": "curto",
-      "tempo_interno_s": 0.063,
-      "tempo_total_s": 0.23015304800000536,
-      "saida_ok": true,
-      "returncode": 0,
-      "stdout": "number of words: 1000000\nword counts are ok\ntime: 0.063 seconds\n",
-      "stderr": "",
-      "motivo": "",
-      "pico_memoria_bytes": 67063808
-    },
-    {
-      "config": "pyarmor-forte",
-      "benchmark": "matrizes",
-      "tamanho": 64,
-      "etapa": "curto",
-      "tempo_interno_s": 0.03,
-      "tempo_total_s": 0.05898021300001233,
-      "saida_ok": true,
-      "returncode": 0,
-      "stdout": "number of rows x cols: 64\nmultiply values are ok\ntime: 0.030 seconds\n",
-      "stderr": "",
-      "motivo": "",
-      "pico_memoria_bytes": 8974336
-    },
-    {
-      "config": "pyarmor-forte",
-      "benchmark": "palavras",
-      "tamanho": 1000000,
-      "etapa": "curto",
       "tempo_interno_s": 0.064,
-      "tempo_total_s": 0.23100856499999622,
+      "tempo_total_s": 0.23518674399997508,
       "saida_ok": true,
       "returncode": 0,
       "stdout": "number of words: 1000000\nword counts are ok\ntime: 0.064 seconds\n",
       "stderr": "",
       "motivo": "",
-      "pico_memoria_bytes": 67473408
+      "pico_memoria_bytes": 65990656
+    },
+    {
+      "config": "minifier-renomear",
+      "benchmark": "matrizes",
+      "tamanho": 64,
+      "etapa": "curto",
+      "tempo_interno_s": 0.029,
+      "tempo_total_s": 0.05824381299999004,
+      "saida_ok": true,
+      "returncode": 0,
+      "stdout": "number of rows x cols: 64\nmultiply values are ok\ntime: 0.029 seconds\n",
+      "stderr": "",
+      "motivo": "",
+      "pico_memoria_bytes": 9011200
+    },
+    {
+      "config": "minifier-renomear",
+      "benchmark": "palavras",
+      "tamanho": 1000000,
+      "etapa": "curto",
+      "tempo_interno_s": 0.073,
+      "tempo_total_s": 0.23152486199995792,
+      "saida_ok": true,
+      "returncode": 0,
+      "stdout": "number of words: 1000000\nword counts are ok\ntime: 0.073 seconds\n",
+      "stderr": "",
+      "motivo": "",
+      "pico_memoria_bytes": 65986560
+    },
+    {
+      "config": "pyarmor-basico",
+      "benchmark": "matrizes",
+      "tamanho": 64,
+      "etapa": "curto",
+      "tempo_interno_s": 0.029,
+      "tempo_total_s": 0.05784177399999635,
+      "saida_ok": true,
+      "returncode": 0,
+      "stdout": "number of rows x cols: 64\nmultiply values are ok\ntime: 0.029 seconds\n",
+      "stderr": "",
+      "motivo": "",
+      "pico_memoria_bytes": 8015872
+    },
+    {
+      "config": "pyarmor-basico",
+      "benchmark": "palavras",
+      "tamanho": 1000000,
+      "etapa": "curto",
+      "tempo_interno_s": 0.068,
+      "tempo_total_s": 0.23259614800002737,
+      "saida_ok": true,
+      "returncode": 0,
+      "stdout": "number of words: 1000000\nword counts are ok\ntime: 0.068 seconds\n",
+      "stderr": "",
+      "motivo": "",
+      "pico_memoria_bytes": 66953216
+    },
+    {
+      "config": "pyarmor-forte",
+      "benchmark": "matrizes",
+      "tamanho": 64,
+      "etapa": "curto",
+      "tempo_interno_s": 0.033,
+      "tempo_total_s": 0.11742655599999807,
+      "saida_ok": true,
+      "returncode": 0,
+      "stdout": "number of rows x cols: 64\nmultiply values are ok\ntime: 0.033 seconds\n",
+      "stderr": "",
+      "motivo": "",
+      "pico_memoria_bytes": 11075584
+    },
+    {
+      "config": "pyarmor-forte",
+      "benchmark": "palavras",
+      "tamanho": 1000000,
+      "etapa": "curto",
+      "tempo_interno_s": 0.072,
+      "tempo_total_s": 0.23344067099998256,
+      "saida_ok": true,
+      "returncode": 0,
+      "stdout": "number of words: 1000000\nword counts are ok\ntime: 0.072 seconds\n",
+      "stderr": "",
+      "motivo": "",
+      "pico_memoria_bytes": 67383296
     },
     {
       "config": "original",
       "benchmark": "matrizes",
       "tamanho": 200,
       "etapa": "sonda",
-      "tempo_interno_s": 0.91,
-      "tempo_total_s": 0.9756030909999822,
+      "tempo_interno_s": 0.99,
+      "tempo_total_s": 1.0482831570000144,
       "saida_ok": true,
       "returncode": 0,
-      "stdout": "number of rows x cols: 200\nmultiply values are ok\ntime: 0.910 seconds\n",
+      "stdout": "number of rows x cols: 200\nmultiply values are ok\ntime: 0.990 seconds\n",
       "stderr": "",
       "motivo": "",
-      "pico_memoria_bytes": 11919360
+      "pico_memoria_bytes": 12013568
     },
     {
       "config": "original",
       "benchmark": "palavras",
       "tamanho": 5000000,
       "etapa": "sonda",
-      "tempo_interno_s": 0.325,
-      "tempo_total_s": 0.9803038130000061,
+      "tempo_interno_s": 0.343,
+      "tempo_total_s": 1.0795398419999742,
       "saida_ok": true,
       "returncode": 0,
-      "stdout": "number of words: 5000000\nword counts are ok\ntime: 0.325 seconds\n",
+      "stdout": "number of words: 5000000\nword counts are ok\ntime: 0.343 seconds\n",
       "stderr": "",
       "motivo": "",
-      "pico_memoria_bytes": 290787328
+      "pico_memoria_bytes": 290746368
     },
     {
       "config": "original",
       "benchmark": "matrizes",
       "tamanho": 608,
       "etapa": "menor_real",
-      "tempo_interno_s": 26.619,
-      "tempo_total_s": 26.716211990000005,
+      "tempo_interno_s": 26.923,
+      "tempo_total_s": 27.011642025000015,
       "saida_ok": true,
       "returncode": 0,
-      "stdout": "number of rows x cols: 608\nmultiply values are ok\ntime: 26.619 seconds\n",
+      "stdout": "number of rows x cols: 608\nmultiply values are ok\ntime: 26.923 seconds\n",
       "stderr": "",
       "motivo": "",
-      "pico_memoria_bytes": 30486528
+      "pico_memoria_bytes": 30580736
+    },
+    {
+      "config": "original",
+      "benchmark": "palavras",
+      "tamanho": 50000000,
+      "etapa": "menor_real",
+      "tempo_interno_s": 3.181,
+      "tempo_total_s": 9.59247976499995,
+      "saida_ok": true,
+      "returncode": 0,
+      "stdout": "number of words: 50000000\nword counts are ok\ntime: 3.181 seconds\n",
+      "stderr": "",
+      "motivo": "",
+      "pico_memoria_bytes": 2819432448
+    },
+    {
+      "config": "original",
+      "benchmark": "palavras",
+      "tamanho": 128000000,
+      "etapa": "maior_real",
+      "tempo_interno_s": 8.269,
+      "tempo_total_s": 25.82431009300001,
+      "saida_ok": true,
+      "returncode": 0,
+      "stdout": "number of words: 128000000\nword counts are ok\ntime: 8.269 seconds\n",
+      "stderr": "",
+      "motivo": "",
+      "pico_memoria_bytes": 7202516992
     }
   ],
   "sugestoes": {
     "matrizes": {
       "tamanhos": [
-        608,
-        912,
-        1368
+        592,
+        888,
+        1336
       ]
     },
     "palavras": {
       "tamanhos": [
-        384615392,
-        576923088,
-        865384632
+        364431488,
+        546647232,
+        819970848
       ]
     }
   },
   "contexto": {
     "maquina": "marcos",
-    "python": "3.14.8",
+    "python": "3.14.10",
     "implementacao": "CPython",
     "abi": "cpython-314",
     "bits_python": 64,
     "so": "Linux-7.2.15-200.fc44.x86_64-x86_64-with-glibc2.43",
     "arquitetura": "x86_64",
     "cpu": "AMD Ryzen 5 5500",
-    "ram_total_bytes": 16636137472,
+    "ram_total_bytes": 16636133376,
     "perfil": {
       "sistema": "Linux",
       "politica": {
@@ -303,11 +331,11 @@
       "scripts/rodar_benchmarks.py": "aab7021665766fb6049965c15c8a719c1312e97eeb2157890a0b0a0c729fb0f2"
     }
   },
-  "assinatura": "e5825459bcc8074c0b02c04dc158042fda1c0d72cb518f6a472e12780ed42e43",
-  "reserva_memoria_bytes": 1663613747,
+  "assinatura": "ebb4303d5074f2f7fb7e89fff8f4b374a184232def4c5a5d176fa1371c92d83d",
+  "reserva_memoria_bytes": 1663613337,
   "bytes_por_palavra": 80,
-  "ram_disponivel_bytes": 12049592320,
+  "ram_disponivel_bytes": 14353809408,
   "ram_exigida_bytes": 12800000000,
   "sugestao_palavras_cabe_ram": false,
-  "estimativa_horas": 5.242016182284935
+  "estimativa_horas": 5.3100838203510445
 }
