@@ -1,0 +1,102 @@
+{
+  "versao": 1,
+  "data": "2026-11-05T12:13:46-03:00",
+  "maquina": "alex",
+  "aprovado": true,
+  "erros": [],
+  "avisos": [],
+  "linhas": 240,
+  "esperadas": 240,
+  "faltantes": 0,
+  "minimos_originais_s": {
+    "matrizes": 22.69,
+    "palavras": 3.9
+  },
+  "excecoes_duracao": {
+    "palavras": {
+      "piso_s": 1,
+      "motivo": "O palavras guarda o corpus inteiro na RAM (~55-63 B/palavra); 20 s exigiriam entradas que não cabem na memória das máquinas do grupo.",
+      "fonte": "Professor, consultado por um integrante do grupo (relato ao grupo em 04/11/2026): o mínimo de 20 s serve só para evitar tempos desprezíveis, como 0,0001 s. Anexar a mensagem original ao relatório."
+    }
+  },
+  "config": {
+    "repeticoes": 10,
+    "tamanho_minimo_segundos": 20,
+    "fator_entre_tamanhos": 1.5,
+    "benchmarks": {
+      "matrizes": {
+        "arquivo": "matrizes.py",
+        "expoente_custo": 3,
+        "tamanhos": [
+          560,
+          840,
+          1264
+        ]
+      },
+      "palavras": {
+        "arquivo": "palavras.py",
+        "expoente_custo": 1,
+        "tamanhos": [
+          50000000,
+          80000000,
+          128000000
+        ]
+      }
+    },
+    "ofuscadores": {
+      "original": {
+        "descricao": "Baseline sem ofuscação (src/)",
+        "diretorio": "src"
+      },
+      "minifier-renomear": {
+        "descricao": "python-minifier: remove comentários/docstrings e renomeia identificadores",
+        "modo": "arquivo",
+        "cmd": [
+          "pyminify",
+          "--rename-globals",
+          "--output",
+          "{saida}",
+          "{entrada}"
+        ]
+      },
+      "pyarmor-basico": {
+        "descricao": "PyArmor com opções padrão",
+        "modo": "diretorio",
+        "cmd": [
+          "pyarmor",
+          "gen",
+          "-O",
+          "{saida}",
+          "{entradas}"
+        ]
+      },
+      "pyarmor-forte": {
+        "descricao": "PyArmor trial: módulo+funções ofuscados, JIT, modo privado e asserts (obf-code 2/mix-str exigem licença paga)",
+        "modo": "diretorio",
+        "cmd": [
+          "pyarmor",
+          "gen",
+          "--obf-module",
+          "1",
+          "--obf-code",
+          "1",
+          "--enable",
+          "jit",
+          "--private",
+          "--assert-call",
+          "--assert-import",
+          "-O",
+          "{saida}",
+          "{entradas}"
+        ]
+      }
+    },
+    "excecoes_duracao": {
+      "palavras": {
+        "piso_s": 1,
+        "motivo": "O palavras guarda o corpus inteiro na RAM (~55-63 B/palavra); 20 s exigiriam entradas que não cabem na memória das máquinas do grupo.",
+        "fonte": "Professor, consultado por um integrante do grupo (relato ao grupo em 04/11/2026): o mínimo de 20 s serve só para evitar tempos desprezíveis, como 0,0001 s. Anexar a mensagem original ao relatório."
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+# Ambiente de teste — alex
+- SO: Linux-7.0.0-38-generic-x86_64-with-glibc2.43
+- Arquitetura: x86_64 / Python 64bit
+- Coleta (com fuso): 2026-11-05T07:19:13-03:00
+- CPU: Intel(R) Xeon(R) E-2124 CPU @ 3.30GHz (4 núcleos físicos / 4 threads)
+- Memória: 30.6 GiB
+- Governor de CPU: powersave
+- Energia: sem bateria (desktop)
+- Python: 3.13.7 (/home/pepg/ofuscacao-so/.venv-py313/bin/python)
+- PyArmor: Pyarmor 9.2.8 (trial), 000000, non-profits
+- python-minifier: 3.4.0
+- Perfil de energia observado: {"sistema": "Linux", "politica": {"/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor": "powersave", "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq": "800000", "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq": "4300000", "/sys/devices/system/cpu/intel_pstate/no_turbo": "0"}}

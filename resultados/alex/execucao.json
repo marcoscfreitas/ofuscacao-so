@@ -1,0 +1,475 @@
+{
+  "versao": 1,
+  "inicio": "2026-11-05T07:20:52-03:00",
+  "contexto": {
+    "maquina": "alex",
+    "python": "3.13.7",
+    "implementacao": "CPython",
+    "abi": "cpython-313",
+    "bits_python": 64,
+    "so": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+    "arquitetura": "x86_64",
+    "cpu": "Intel(R) Xeon(R) E-2124 CPU @ 3.30GHz",
+    "ram_total_bytes": 32814776320,
+    "perfil": {
+      "sistema": "Linux",
+      "politica": {
+        "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor": "powersave",
+        "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq": "800000",
+        "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq": "4300000",
+        "/sys/devices/system/cpu/intel_pstate/no_turbo": "0"
+      }
+    },
+    "perfil_declarado": "padrão do sistema",
+    "ferramentas": {
+      "pyarmor": "9.2.8",
+      "python-minifier": "3.4.0",
+      "psutil": "7.2.2",
+      "matplotlib": "3.11.2"
+    },
+    "config": {
+      "repeticoes": 10,
+      "tamanho_minimo_segundos": 20,
+      "fator_entre_tamanhos": 1.5,
+      "benchmarks": {
+        "matrizes": {
+          "arquivo": "matrizes.py",
+          "expoente_custo": 3,
+          "tamanhos": [
+            560,
+            840,
+            1264
+          ]
+        },
+        "palavras": {
+          "arquivo": "palavras.py",
+          "expoente_custo": 1,
+          "tamanhos": [
+            50000000,
+            80000000,
+            128000000
+          ]
+        }
+      },
+      "ofuscadores": {
+        "original": {
+          "descricao": "Baseline sem ofuscação (src/)",
+          "diretorio": "src"
+        },
+        "minifier-renomear": {
+          "descricao": "python-minifier: remove comentários/docstrings e renomeia identificadores",
+          "modo": "arquivo",
+          "cmd": [
+            "pyminify",
+            "--rename-globals",
+            "--output",
+            "{saida}",
+            "{entrada}"
+          ]
+        },
+        "pyarmor-basico": {
+          "descricao": "PyArmor com opções padrão",
+          "modo": "diretorio",
+          "cmd": [
+            "pyarmor",
+            "gen",
+            "-O",
+            "{saida}",
+            "{entradas}"
+          ]
+        },
+        "pyarmor-forte": {
+          "descricao": "PyArmor trial: módulo+funções ofuscados, JIT, modo privado e asserts (obf-code 2/mix-str exigem licença paga)",
+          "modo": "diretorio",
+          "cmd": [
+            "pyarmor",
+            "gen",
+            "--obf-module",
+            "1",
+            "--obf-code",
+            "1",
+            "--enable",
+            "jit",
+            "--private",
+            "--assert-call",
+            "--assert-import",
+            "-O",
+            "{saida}",
+            "{entradas}"
+          ]
+        }
+      },
+      "excecoes_duracao": {
+        "palavras": {
+          "piso_s": 1,
+          "motivo": "O palavras guarda o corpus inteiro na RAM (~55-63 B/palavra); 20 s exigiriam entradas que não cabem na memória das máquinas do grupo.",
+          "fonte": "Professor, consultado por um integrante do grupo (relato ao grupo em 04/11/2026): o mínimo de 20 s serve só para evitar tempos desprezíveis, como 0,0001 s. Anexar a mensagem original ao relatório."
+        }
+      }
+    },
+    "hashes": {
+      "src/matrizes.py": "d78c7a50f47539421663bd156e6ffdb10587769c920aa72a23e691cb602a21d9",
+      "src/palavras.py": "bf4a72891dc3cd2edde4557748ed28d8e21511224a87e472ac6e6a3b2033de9d",
+      "ofuscado/alex/minifier-renomear/matrizes.py": "375390f5423e39563baa708064ef2ebc07d5ee42d3ffe0a688a0411d0e5d040b",
+      "ofuscado/alex/minifier-renomear/palavras.py": "43b1519bd21914dde242431c9431839f232b175c0385ffc516e9d96beafcdb54",
+      "ofuscado/alex/pyarmor-basico/matrizes.py": "cb3a7c86c13671e9c2ef808497f55dd9606c769a1807a1b61f1f74bb1d410f51",
+      "ofuscado/alex/pyarmor-basico/palavras.py": "9272ff23fc2b4706f429123b15f57090db1ebaae634ed040de7257488c57bfe0",
+      "ofuscado/alex/pyarmor-basico/pyarmor_runtime_000000/pyarmor_runtime.so": "f030d68873e5aba0278ad5cfc8884ae4d1d9d80da0b049126b8a94b69b547947",
+      "ofuscado/alex/pyarmor-basico/pyarmor_runtime_000000/__init__.py": "2f3a374fa783932dbe1e9b6e940a2239d7606b59fa04917ba073a78f531dcaa2",
+      "ofuscado/alex/pyarmor-forte/matrizes.py": "c6a74766bf962d7675632232e6fba2446964790e23fb525bc0e8016177a55ddd",
+      "ofuscado/alex/pyarmor-forte/palavras.py": "5eadc509d76c966084d39bb540c2bf0261e06d37b296945cd720e5f28a6b5e39",
+      "ofuscado/alex/pyarmor-forte/pyarmor_runtime_000000/pyarmor_runtime.so": "f4f13c217e9935e069758a6ee03c01cb791f0b7e3bd35f95778834d1e425aebe",
+      "ofuscado/alex/pyarmor-forte/pyarmor_runtime_000000/__init__.py": "ad3850ca14922f8569832f0003e5b8a4d3efd21474df0ef4399ef34be93d2c94",
+      "scripts/comum.py": "a6be461cb684a78def69776f584ae0c6b2b3b2933f8bc1b38b4a00cfc9a0a3c8",
+      "scripts/verificar.py": "3a3143da549d2fd16b71dd41b268e6c548c55d207a52745dbf8d3ddff45a26fd",
+      "scripts/rodar_benchmarks.py": "aab7021665766fb6049965c15c8a719c1312e97eeb2157890a0b0a0c729fb0f2"
+    }
+  },
+  "assinatura": "04cb63dc6d19fc6c40f50f19756e9657c8aef7162b7f673e5276fc71c5e8cb81",
+  "condicoes_confirmadas": true,
+  "preflight": {
+    "versao": 1,
+    "maquina": "alex",
+    "data": "2026-11-05T07:19:20-03:00",
+    "aprovado": true,
+    "problemas": [],
+    "avisos": [
+      "palavras n=50000000: 4.256 s < 20 s; EXCEÇÃO aceita (piso 1 s): O palavras guarda o corpus inteiro na RAM (~55-63 B/palavra); 20 s exigiriam entradas que não cabem na memória das máquinas do grupo. Fonte: Professor, consultado por um integrante do grupo (relato ao grupo em 04/11/2026): o mínimo de 20 s serve só para evitar tempos desprezíveis, como 0,0001 s. Anexar a mensagem original ao relatório."
+    ],
+    "medicoes": [
+      {
+        "config": "original",
+        "benchmark": "matrizes",
+        "tamanho": 64,
+        "etapa": "curto",
+        "tempo_interno_s": 0.036,
+        "tempo_total_s": 0.051299754064530134,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 64\nmultiply values are ok\ntime: 0.036 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 2494464
+      },
+      {
+        "config": "original",
+        "benchmark": "palavras",
+        "tamanho": 1000000,
+        "etapa": "curto",
+        "tempo_interno_s": 0.083,
+        "tempo_total_s": 0.2532514298800379,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 1000000\nword counts are ok\ntime: 0.083 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 66011136
+      },
+      {
+        "config": "minifier-renomear",
+        "benchmark": "matrizes",
+        "tamanho": 64,
+        "etapa": "curto",
+        "tempo_interno_s": 0.035,
+        "tempo_total_s": 0.05104122101329267,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 64\nmultiply values are ok\ntime: 0.035 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 1138688
+      },
+      {
+        "config": "minifier-renomear",
+        "benchmark": "palavras",
+        "tamanho": 1000000,
+        "etapa": "curto",
+        "tempo_interno_s": 0.083,
+        "tempo_total_s": 0.2532935149502009,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 1000000\nword counts are ok\ntime: 0.083 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 66007040
+      },
+      {
+        "config": "pyarmor-basico",
+        "benchmark": "matrizes",
+        "tamanho": 64,
+        "etapa": "curto",
+        "tempo_interno_s": 0.034,
+        "tempo_total_s": 0.051095744129270315,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 64\nmultiply values are ok\ntime: 0.034 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 1417216
+      },
+      {
+        "config": "pyarmor-basico",
+        "benchmark": "palavras",
+        "tamanho": 1000000,
+        "etapa": "curto",
+        "tempo_interno_s": 0.092,
+        "tempo_total_s": 0.25484093418344855,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 1000000\nword counts are ok\ntime: 0.092 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 66904064
+      },
+      {
+        "config": "pyarmor-forte",
+        "benchmark": "matrizes",
+        "tamanho": 64,
+        "etapa": "curto",
+        "tempo_interno_s": 0.035,
+        "tempo_total_s": 0.051312978845089674,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 64\nmultiply values are ok\ntime: 0.035 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 2887680
+      },
+      {
+        "config": "pyarmor-forte",
+        "benchmark": "palavras",
+        "tamanho": 1000000,
+        "etapa": "curto",
+        "tempo_interno_s": 0.089,
+        "tempo_total_s": 0.25326648307964206,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 1000000\nword counts are ok\ntime: 0.089 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 67129344
+      },
+      {
+        "config": "original",
+        "benchmark": "matrizes",
+        "tamanho": 200,
+        "etapa": "sonda",
+        "tempo_interno_s": 1.086,
+        "tempo_total_s": 1.1177779959980398,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 200\nmultiply values are ok\ntime: 1.086 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 11943936
+      },
+      {
+        "config": "original",
+        "benchmark": "palavras",
+        "tamanho": 5000000,
+        "etapa": "sonda",
+        "tempo_interno_s": 0.429,
+        "tempo_total_s": 1.1653737989254296,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 5000000\nword counts are ok\ntime: 0.429 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 290713600
+      },
+      {
+        "config": "original",
+        "benchmark": "matrizes",
+        "tamanho": 560,
+        "etapa": "menor_real",
+        "tempo_interno_s": 25.541,
+        "tempo_total_s": 25.60907837608829,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of rows x cols: 560\nmultiply values are ok\ntime: 25.541 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 27549696
+      },
+      {
+        "config": "original",
+        "benchmark": "palavras",
+        "tamanho": 50000000,
+        "etapa": "menor_real",
+        "tempo_interno_s": 4.256,
+        "tempo_total_s": 11.183557415846735,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 50000000\nword counts are ok\ntime: 4.256 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 2819457024
+      },
+      {
+        "config": "original",
+        "benchmark": "palavras",
+        "tamanho": 128000000,
+        "etapa": "maior_real",
+        "tempo_interno_s": 10.752,
+        "tempo_total_s": 28.431639949791133,
+        "saida_ok": true,
+        "returncode": 0,
+        "stdout": "number of words: 128000000\nword counts are ok\ntime: 10.752 seconds\n",
+        "stderr": "",
+        "motivo": "",
+        "pico_memoria_bytes": 7202373632
+      }
+    ],
+    "sugestoes": {
+      "matrizes": {
+        "tamanhos": [
+          576,
+          864,
+          1296
+        ]
+      },
+      "palavras": {
+        "tamanhos": [
+          291375296,
+          437062944,
+          655594416
+        ]
+      }
+    },
+    "contexto": {
+      "maquina": "alex",
+      "python": "3.13.7",
+      "implementacao": "CPython",
+      "abi": "cpython-313",
+      "bits_python": 64,
+      "so": "Linux-7.0.0-38-generic-x86_64-with-glibc2.43",
+      "arquitetura": "x86_64",
+      "cpu": "Intel(R) Xeon(R) E-2124 CPU @ 3.30GHz",
+      "ram_total_bytes": 32814776320,
+      "perfil": {
+        "sistema": "Linux",
+        "politica": {
+          "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor": "powersave",
+          "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq": "800000",
+          "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq": "4300000",
+          "/sys/devices/system/cpu/intel_pstate/no_turbo": "0"
+        }
+      },
+      "perfil_declarado": "padrão do sistema",
+      "ferramentas": {
+        "pyarmor": "9.2.8",
+        "python-minifier": "3.4.0",
+        "psutil": "7.2.2",
+        "matplotlib": "3.11.2"
+      },
+      "config": {
+        "repeticoes": 10,
+        "tamanho_minimo_segundos": 20,
+        "fator_entre_tamanhos": 1.5,
+        "benchmarks": {
+          "matrizes": {
+            "arquivo": "matrizes.py",
+            "expoente_custo": 3,
+            "tamanhos": [
+              560,
+              840,
+              1264
+            ]
+          },
+          "palavras": {
+            "arquivo": "palavras.py",
+            "expoente_custo": 1,
+            "tamanhos": [
+              50000000,
+              80000000,
+              128000000
+            ]
+          }
+        },
+        "ofuscadores": {
+          "original": {
+            "descricao": "Baseline sem ofuscação (src/)",
+            "diretorio": "src"
+          },
+          "minifier-renomear": {
+            "descricao": "python-minifier: remove comentários/docstrings e renomeia identificadores",
+            "modo": "arquivo",
+            "cmd": [
+              "pyminify",
+              "--rename-globals",
+              "--output",
+              "{saida}",
+              "{entrada}"
+            ]
+          },
+          "pyarmor-basico": {
+            "descricao": "PyArmor com opções padrão",
+            "modo": "diretorio",
+            "cmd": [
+              "pyarmor",
+              "gen",
+              "-O",
+              "{saida}",
+              "{entradas}"
+            ]
+          },
+          "pyarmor-forte": {
+            "descricao": "PyArmor trial: módulo+funções ofuscados, JIT, modo privado e asserts (obf-code 2/mix-str exigem licença paga)",
+            "modo": "diretorio",
+            "cmd": [
+              "pyarmor",
+              "gen",
+              "--obf-module",
+              "1",
+              "--obf-code",
+              "1",
+              "--enable",
+              "jit",
+              "--private",
+              "--assert-call",
+              "--assert-import",
+              "-O",
+              "{saida}",
+              "{entradas}"
+            ]
+          }
+        },
+        "excecoes_duracao": {
+          "palavras": {
+            "piso_s": 1,
+            "motivo": "O palavras guarda o corpus inteiro na RAM (~55-63 B/palavra); 20 s exigiriam entradas que não cabem na memória das máquinas do grupo.",
+            "fonte": "Professor, consultado por um integrante do grupo (relato ao grupo em 04/11/2026): o mínimo de 20 s serve só para evitar tempos desprezíveis, como 0,0001 s. Anexar a mensagem original ao relatório."
+          }
+        }
+      },
+      "hashes": {
+        "src/matrizes.py": "d78c7a50f47539421663bd156e6ffdb10587769c920aa72a23e691cb602a21d9",
+        "src/palavras.py": "bf4a72891dc3cd2edde4557748ed28d8e21511224a87e472ac6e6a3b2033de9d",
+        "ofuscado/alex/minifier-renomear/matrizes.py": "375390f5423e39563baa708064ef2ebc07d5ee42d3ffe0a688a0411d0e5d040b",
+        "ofuscado/alex/minifier-renomear/palavras.py": "43b1519bd21914dde242431c9431839f232b175c0385ffc516e9d96beafcdb54",
+        "ofuscado/alex/pyarmor-basico/matrizes.py": "cb3a7c86c13671e9c2ef808497f55dd9606c769a1807a1b61f1f74bb1d410f51",
+        "ofuscado/alex/pyarmor-basico/palavras.py": "9272ff23fc2b4706f429123b15f57090db1ebaae634ed040de7257488c57bfe0",
+        "ofuscado/alex/pyarmor-basico/pyarmor_runtime_000000/pyarmor_runtime.so": "f030d68873e5aba0278ad5cfc8884ae4d1d9d80da0b049126b8a94b69b547947",
+        "ofuscado/alex/pyarmor-basico/pyarmor_runtime_000000/__init__.py": "2f3a374fa783932dbe1e9b6e940a2239d7606b59fa04917ba073a78f531dcaa2",
+        "ofuscado/alex/pyarmor-forte/matrizes.py": "c6a74766bf962d7675632232e6fba2446964790e23fb525bc0e8016177a55ddd",
+        "ofuscado/alex/pyarmor-forte/palavras.py": "5eadc509d76c966084d39bb540c2bf0261e06d37b296945cd720e5f28a6b5e39",
+        "ofuscado/alex/pyarmor-forte/pyarmor_runtime_000000/pyarmor_runtime.so": "f4f13c217e9935e069758a6ee03c01cb791f0b7e3bd35f95778834d1e425aebe",
+        "ofuscado/alex/pyarmor-forte/pyarmor_runtime_000000/__init__.py": "ad3850ca14922f8569832f0003e5b8a4d3efd21474df0ef4399ef34be93d2c94",
+        "scripts/comum.py": "a6be461cb684a78def69776f584ae0c6b2b3b2933f8bc1b38b4a00cfc9a0a3c8",
+        "scripts/verificar.py": "3a3143da549d2fd16b71dd41b268e6c548c55d207a52745dbf8d3ddff45a26fd",
+        "scripts/rodar_benchmarks.py": "aab7021665766fb6049965c15c8a719c1312e97eeb2157890a0b0a0c729fb0f2"
+      }
+    },
+    "assinatura": "04cb63dc6d19fc6c40f50f19756e9657c8aef7162b7f673e5276fc71c5e8cb81",
+    "reserva_memoria_bytes": 3281477632,
+    "bytes_por_palavra": 80,
+    "ram_disponivel_bytes": 27085889536,
+    "ram_exigida_bytes": 12800000000,
+    "sugestao_palavras_cabe_ram": false,
+    "estimativa_horas": 5.153751189237955
+  },
+  "estado": "concluido",
+  "atualizado": "2026-11-05T07:20:52-03:00",
+  "fim": "2026-11-05T12:13:46-03:00",
+  "csv_sha256": "f2e2f7336d92483e29134ba8da4831dbebeea8758ce2ecd205292549c82f3829"
+}
