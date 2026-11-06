@@ -1,0 +1,11 @@
+\begin{table}[ht]\centering\footnotesize
+\caption{Slowdown (média ofuscada / média original) no maior tamanho, com IC 95\% por bootstrap. Negrito: IC não contém 1,0.}\label{tab:resumo}
+\begin{tabular}{llccc}\hline
+benchmark & máquina (tamanho) & minifier-renomear & pyarmor-basico & pyarmor-forte \\\hline
+matrizes & Pedro (1264) & 1,002 [0,987; 1,019] & \textbf{1,033 [1,022; 1,046]} & \textbf{1,029 [1,017; 1,040]} \\
+matrizes & Alex (1264) & 1,004 [0,998; 1,010] & 0,999 [0,995; 1,002] & 0,999 [0,995; 1,003] \\
+matrizes & Marcos (1368) & 0,997 [0,982; 1,009] & 1,014 [0,980; 1,058] & 0,992 [0,978; 1,004] \\
+palavras & Pedro (128M) & 1,001 [0,971; 1,032] & \textbf{1,048 [1,020; 1,079]} & \textbf{1,050 [1,018; 1,082]} \\
+palavras & Alex (128M) & \textbf{0,972 [0,954; 0,991]} & 1,002 [0,982; 1,022] & 0,993 [0,975; 1,010] \\
+palavras & Marcos (128M) & \textbf{0,962 [0,934; 0,988]} & \textbf{0,968 [0,938; 0,996]} & \textbf{0,973 [0,945; 0,999]} \\
+\hline\end{tabular}\end{table}

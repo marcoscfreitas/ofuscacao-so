@@ -1,0 +1,125 @@
+\begin{table}[ht]\centering\footnotesize
+\caption{Matrizes --- máquina Pedro (10 repetições por linha; tempos em s).}\label{tab:pedro-matrizes}
+\begin{tabular}{rlrrrrrr}\hline
+$n$ & configuração & média & mediana & desvio & mín & máx & slowdown \\\hline
+560 & original & 27,464 & 27,275 & 0,653 & 26,659 & 28,993 & 1,000 \\
+ & minifier-renomear & 27,553 & 27,663 & 0,331 & 26,933 & 28,023 & 1,003 \\
+ & pyarmor-basico & 28,506 & 28,310 & 0,483 & 27,913 & 29,376 & 1,038 \\
+ & pyarmor-forte & 28,620 & 28,590 & 0,709 & 27,902 & 30,295 & 1,042 \\
+\hline
+840 & original & 97,074 & 96,422 & 2,795 & 92,210 & 100,738 & 1,000 \\
+ & minifier-renomear & 94,498 & 94,102 & 2,047 & 92,161 & 97,957 & 0,973 \\
+ & pyarmor-basico & 98,980 & 98,979 & 1,864 & 96,846 & 103,543 & 1,020 \\
+ & pyarmor-forte & 98,861 & 98,909 & 1,503 & 96,778 & 102,081 & 1,018 \\
+\hline
+1264 & original & 333,784 & 335,045 & 5,784 & 323,321 & 342,395 & 1,000 \\
+ & minifier-renomear & 334,618 & 335,580 & 6,919 & 325,628 & 342,407 & 1,002 \\
+ & pyarmor-basico & 344,935 & 346,204 & 3,600 & 339,523 & 350,544 & 1,033 \\
+ & pyarmor-forte & 343,321 & 343,697 & 2,021 & 340,873 & 346,338 & 1,029 \\
+\hline
+\end{tabular}\end{table}
+
+\begin{table}[ht]\centering\footnotesize
+\caption{Palavras --- máquina Pedro (10 repetições por linha; tempos em s).}\label{tab:pedro-palavras}
+\begin{tabular}{rlrrrrrr}\hline
+$n$ & configuração & média & mediana & desvio & mín & máx & slowdown \\\hline
+50M & original & 4,314 & 4,292 & 0,161 & 4,157 & 4,713 & 1,000 \\
+ & minifier-renomear & 4,269 & 4,255 & 0,196 & 4,063 & 4,594 & 0,990 \\
+ & pyarmor-basico & 4,633 & 4,640 & 0,118 & 4,469 & 4,858 & 1,074 \\
+ & pyarmor-forte & 4,610 & 4,600 & 0,158 & 4,364 & 4,859 & 1,069 \\
+\hline
+80M & original & 6,833 & 6,809 & 0,185 & 6,660 & 7,272 & 1,000 \\
+ & minifier-renomear & 6,900 & 6,913 & 0,147 & 6,720 & 7,189 & 1,010 \\
+ & pyarmor-basico & 7,401 & 7,378 & 0,265 & 7,030 & 7,939 & 1,083 \\
+ & pyarmor-forte & 7,317 & 7,250 & 0,231 & 7,020 & 7,641 & 1,071 \\
+\hline
+128M & original & 11,068 & 11,020 & 0,422 & 10,369 & 11,758 & 1,000 \\
+ & minifier-renomear & 11,073 & 11,095 & 0,370 & 10,392 & 11,574 & 1,001 \\
+ & pyarmor-basico & 11,604 & 11,524 & 0,345 & 11,234 & 12,175 & 1,048 \\
+ & pyarmor-forte & 11,619 & 11,634 & 0,424 & 11,019 & 12,369 & 1,050 \\
+\hline
+\end{tabular}\end{table}
+
+\begin{table}[ht]\centering\footnotesize
+\caption{Matrizes --- máquina Alex (10 repetições por linha; tempos em s).}\label{tab:alex-matrizes}
+\begin{tabular}{rlrrrrrr}\hline
+$n$ & configuração & média & mediana & desvio & mín & máx & slowdown \\\hline
+560 & original & 23,046 & 22,788 & 0,821 & 22,690 & 25,372 & 1,000 \\
+ & minifier-renomear & 23,161 & 22,898 & 0,843 & 22,797 & 25,549 & 1,005 \\
+ & pyarmor-basico & 22,872 & 22,794 & 0,242 & 22,703 & 23,531 & 0,992 \\
+ & pyarmor-forte & 22,805 & 22,814 & 0,081 & 22,688 & 22,963 & 0,990 \\
+\hline
+840 & original & 80,475 & 79,916 & 1,848 & 79,653 & 85,718 & 1,000 \\
+ & minifier-renomear & 80,132 & 80,135 & 0,134 & 79,879 & 80,342 & 0,996 \\
+ & pyarmor-basico & 80,145 & 80,099 & 0,240 & 79,810 & 80,527 & 0,996 \\
+ & pyarmor-forte & 80,132 & 80,141 & 0,166 & 79,883 & 80,463 & 0,996 \\
+\hline
+1264 & original & 282,548 & 282,243 & 1,830 & 280,048 & 286,012 & 1,000 \\
+ & minifier-renomear & 283,539 & 282,820 & 2,290 & 280,526 & 289,233 & 1,004 \\
+ & pyarmor-basico & 282,185 & 282,116 & 0,176 & 282,023 & 282,613 & 0,999 \\
+ & pyarmor-forte & 282,329 & 282,329 & 0,350 & 281,697 & 282,962 & 0,999 \\
+\hline
+\end{tabular}\end{table}
+
+\begin{table}[ht]\centering\footnotesize
+\caption{Palavras --- máquina Alex (10 repetições por linha; tempos em s).}\label{tab:alex-palavras}
+\begin{tabular}{rlrrrrrr}\hline
+$n$ & configuração & média & mediana & desvio & mín & máx & slowdown \\\hline
+50M & original & 3,974 & 3,990 & 0,043 & 3,900 & 4,013 & 1,000 \\
+ & minifier-renomear & 3,955 & 3,954 & 0,086 & 3,837 & 4,076 & 0,995 \\
+ & pyarmor-basico & 3,982 & 3,999 & 0,082 & 3,863 & 4,081 & 1,002 \\
+ & pyarmor-forte & 4,038 & 4,054 & 0,091 & 3,846 & 4,140 & 1,016 \\
+\hline
+80M & original & 6,306 & 6,279 & 0,107 & 6,195 & 6,508 & 1,000 \\
+ & minifier-renomear & 6,177 & 6,191 & 0,136 & 6,005 & 6,383 & 0,979 \\
+ & pyarmor-basico & 6,472 & 6,434 & 0,117 & 6,339 & 6,725 & 1,026 \\
+ & pyarmor-forte & 6,509 & 6,528 & 0,180 & 6,202 & 6,856 & 1,032 \\
+\hline
+128M & original & 10,206 & 10,201 & 0,213 & 9,956 & 10,601 & 1,000 \\
+ & minifier-renomear & 9,923 & 9,924 & 0,241 & 9,609 & 10,307 & 0,972 \\
+ & pyarmor-basico & 10,227 & 10,268 & 0,270 & 9,851 & 10,592 & 1,002 \\
+ & pyarmor-forte & 10,136 & 10,166 & 0,218 & 9,823 & 10,462 & 0,993 \\
+\hline
+\end{tabular}\end{table}
+
+\begin{table}[ht]\centering\footnotesize
+\caption{Matrizes --- máquina Marcos (10 repetições por linha; tempos em s).}\label{tab:marcos-matrizes}
+\begin{tabular}{rlrrrrrr}\hline
+$n$ & configuração & média & mediana & desvio & mín & máx & slowdown \\\hline
+608 & original & 26,175 & 26,045 & 0,244 & 25,986 & 26,584 & 1,000 \\
+ & minifier-renomear & 26,676 & 26,242 & 0,680 & 26,053 & 27,786 & 1,019 \\
+ & pyarmor-basico & 26,683 & 26,038 & 1,483 & 25,949 & 30,633 & 1,019 \\
+ & pyarmor-forte & 26,223 & 26,017 & 0,531 & 25,964 & 27,703 & 1,002 \\
+\hline
+912 & original & 88,678 & 88,330 & 0,742 & 88,272 & 90,643 & 1,000 \\
+ & minifier-renomear & 89,301 & 88,945 & 1,107 & 88,894 & 92,449 & 1,007 \\
+ & pyarmor-basico & 88,256 & 88,060 & 0,459 & 87,949 & 89,323 & 0,995 \\
+ & pyarmor-forte & 90,741 & 88,054 & 8,277 & 87,979 & 114,289 & 1,023 \\
+\hline
+1368 & original & 317,464 & 315,249 & 6,591 & 312,588 & 333,673 & 1,000 \\
+ & minifier-renomear & 316,474 & 315,683 & 2,624 & 314,218 & 322,920 & 0,997 \\
+ & pyarmor-basico & 321,839 & 311,998 & 20,591 & 311,068 & 366,606 & 1,014 \\
+ & pyarmor-forte & 315,071 & 314,790 & 3,188 & 310,852 & 319,891 & 0,992 \\
+\hline
+\end{tabular}\end{table}
+
+\begin{table}[ht]\centering\footnotesize
+\caption{Palavras --- máquina Marcos (10 repetições por linha; tempos em s).}\label{tab:marcos-palavras}
+\begin{tabular}{rlrrrrrr}\hline
+$n$ & configuração & média & mediana & desvio & mín & máx & slowdown \\\hline
+50M & original & 3,201 & 3,194 & 0,057 & 3,132 & 3,302 & 1,000 \\
+ & minifier-renomear & 3,150 & 3,149 & 0,062 & 3,029 & 3,274 & 0,984 \\
+ & pyarmor-basico & 3,196 & 3,209 & 0,075 & 3,014 & 3,279 & 0,998 \\
+ & pyarmor-forte & 3,218 & 3,210 & 0,059 & 3,124 & 3,330 & 1,005 \\
+\hline
+80M & original & 5,069 & 5,093 & 0,126 & 4,851 & 5,255 & 1,000 \\
+ & minifier-renomear & 5,117 & 5,063 & 0,218 & 4,831 & 5,666 & 1,009 \\
+ & pyarmor-basico & 5,117 & 5,097 & 0,107 & 4,989 & 5,277 & 1,009 \\
+ & pyarmor-forte & 5,104 & 5,112 & 0,126 & 4,851 & 5,299 & 1,007 \\
+\hline
+128M & original & 8,376 & 8,271 & 0,367 & 7,957 & 9,169 & 1,000 \\
+ & minifier-renomear & 8,059 & 8,095 & 0,147 & 7,813 & 8,245 & 0,962 \\
+ & pyarmor-basico & 8,109 & 8,102 & 0,216 & 7,862 & 8,551 & 0,968 \\
+ & pyarmor-forte & 8,149 & 8,152 & 0,160 & 7,906 & 8,421 & 0,973 \\
+\hline
+\end{tabular}\end{table}

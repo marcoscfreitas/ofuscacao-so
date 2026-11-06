@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custo de desempenho da ofuscação em Python</title>
+<style>
+  /* Slides 4:3 (1024x768 lógicos), escalados para a janela. Setas/espaço navegam; F = tela cheia; N = notas; Ctrl+P = PDF. */
+  :root{
+    --bg:#fafafa; --ink:#1f2d33; --mute:#5b6b73; --accent:#b0102b; --accent2:#e8851a;
+    --line:#d9dee1; --card:#ffffff; --good:#1b7f4b; --bad:#b0102b; --code:#f1f3f4;
+    --c-orig:#4c72b0; --c-min:#dd8452; --c-basic:#55a868; --c-strong:#c44e52;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#20282c;font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;color:var(--ink);overflow:hidden}
+  #stage{position:fixed;left:50%;top:50%;width:1024px;height:768px;transform-origin:center center}
+  .slide{position:absolute;inset:0;background:var(--bg);display:none;flex-direction:column;overflow:hidden}
+  .slide.active{display:flex}
+  header{background:var(--accent);color:#fff;padding:18px 44px;font-size:30px;font-weight:700;letter-spacing:.2px}
+  .body{flex:1;padding:26px 44px 40px;font-size:25px;line-height:1.38;display:flex;flex-direction:column;gap:14px;min-height:0}
+  footer{position:absolute;left:44px;right:44px;bottom:12px;display:flex;justify-content:space-between;font-size:14px;color:var(--mute)}
+  h1{font-size:46px;line-height:1.12;margin:0 0 14px}
+  h2{font-size:26px;margin:0;color:var(--accent)}
+  ul{margin:0;padding-left:30px} li{margin:5px 0}
+  li::marker{color:var(--accent)}
+  .mute{color:var(--mute)} .small{font-size:19px} .tiny{font-size:16px}
+  .cols{display:flex;gap:24px;min-height:0} .cols>*{flex:1;min-width:0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px}
+  .title{justify-content:center;padding:0 70px;background:linear-gradient(180deg,#fafafa 0,#fafafa 100%)}
+  .title .rule{height:3px;background:var(--accent);margin:18px 0 22px;width:100%}
+  .title p{margin:4px 0;font-size:24px;color:var(--mute)}
+  table{border-collapse:collapse;width:100%;font-size:21px}
+  th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left}
+  th{background:#eef1f3;font-size:18px;color:var(--mute);font-weight:600}
+  td.n,th.n{text-align:center}
+  code,pre{font-family:Consolas,"Courier New",monospace}
+  code{background:var(--code);padding:1px 6px;border-radius:4px;font-size:.88em}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:0;font-size:17px;line-height:1.35;overflow:hidden;white-space:pre}
+  img.fig{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .fig-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+  .fig-wrap img{max-width:100%;max-height:100%;border:1px solid var(--line);border-radius:8px;background:#fff}
+  .tag{display:inline-block;padding:1px 10px;border-radius:12px;font-size:.78em;color:#fff;font-weight:600}
+  .c-orig{background:var(--c-orig)}.c-min{background:var(--c-min)}.c-basic{background:var(--c-basic)}.c-strong{background:var(--c-strong)}
+  .big{font-size:44px;white-space:nowrap;font-weight:800;color:var(--accent);line-height:1}
+  .stat{text-align:center}.stat .lbl{font-size:18px;color:var(--mute);margin-top:6px}
+  .sig{font-weight:700;color:var(--accent)}
+  .hl{background:#fff0c9;border-radius:3px;padding:0 3px}
+  .callout{border-left:6px solid var(--accent2);background:#fff7ea;padding:12px 18px;border-radius:0 8px 8px 0}
+  #notes{position:fixed;left:0;right:0;bottom:0;background:rgba(15,20,22,.94);color:#e8eef0;padding:14px 28px;font-size:18px;line-height:1.4;display:none;z-index:9;max-height:34vh;overflow:auto}
+  #notes.on{display:block}
+  .slide .note{display:none}
+  #hint{position:fixed;right:10px;top:8px;color:#9fb0b7;font-size:12px;z-index:5;opacity:.7}
+  @media print{
+    @page{size:1024px 768px;margin:0}
+    html,body{overflow:visible;background:#fff;height:auto}
+    #stage{position:static;transform:none!important;width:1024px;height:auto}
+    .slide{display:flex!important;position:relative;width:1024px;height:768px;page-break-after:always;break-after:page}
+    #notes,#hint{display:none!important}
+  }
+</style>
+</head>
+<body>
+<div id="hint">← → navegar · F tela cheia · N notas</div>
+<div id="stage">
+
+<!-- 1 -->
+<section class="slide title">
+  <h1>Custo de desempenho da ofuscação de código Python</h1>
+  <div class="rule"></div>
+  <p>PyArmor e python-minifier em três máquinas</p>
+  <p style="margin-top:34px">Pedro Machado · Marcos Freitas · Alexsander Santos</p>
+  <p>Sistemas Operacionais - FURG · Prof. Vinícius Garcia Pinto · Trabalho IV</p>
+  <div class="note">Comparamos dois benchmarks Python em três máquinas. O objetivo é medir o custo de tempo das configurações de ofuscação.</div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <header>O que queremos medir</header>
+  <div class="body">
+    <p style="margin:0">Ofuscar dificulta a engenharia reversa, mas <b>quanto custa em tempo de execução?</b></p>
+    <ul>
+      <li>Linguagem: <b>Python</b> (CPython). Base de comparação: <b>o mesmo código sem ofuscar</b>, na mesma máquina.</li>
+      <li>Perguntas: o custo depende da <b>técnica</b>, do <b>benchmark</b>, do <b>tamanho da entrada</b>, da <b>máquina</b>?</li>
+    </ul>
+    <div class="cols">
+      <div class="card"><h2>Matrizes</h2><p class="small" style="margin:6px 0 0">Multiplicação <i>n×n</i> com 3 laços aninhados.<br>Custo <b>O(n³)</b>, dominado por aritmética.</p></div>
+      <div class="card"><h2>Palavras</h2><p class="small" style="margin:6px 0 0">Contagem de frequência em um dicionário (<code>dict.get</code>).<br>Custo médio esperado <b>O(n)</b>. Corpus inteiro na RAM.</p></div>
+    </div>
+    <p class="small mute" style="margin:0">Benchmarks do professor, sem alterações. Tempo usado: o <code>time: X seconds</code> impresso pelo próprio programa (só a parte computacional).</p>
+  </div>
+  <footer><span>Custo da ofuscação em Python</span><span>2</span></footer>
+  <div class="note">Os programas são os fornecidos pelo professor. O tempo interno cobre o cálculo. A construção das entradas fica fora do cronômetro.</div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <header>Configurações de ofuscação</header>
+  <div class="body">
+    <table>
+      <tr><th style="width:24%">configuração</th><th style="width:36%">o que faz</th><th>comando</th></tr>
+      <tr><td><span class="tag c-orig">original</span></td><td>baseline, sem ofuscar</td><td class="small mute">-</td></tr>
+      <tr><td><span class="tag c-min">minifier</span></td><td>renomeia identificadores, remove comentários</td><td><code>pyminify --rename-globals</code></td></tr>
+      <tr><td><span class="tag c-basic">pyarmor-básico</span></td><td>criptografa o bytecode; <i>runtime</i> nativo</td><td><code>pyarmor gen</code></td></tr>
+      <tr><td><span class="tag c-strong">pyarmor-forte</span></td><td>o anterior + <code>jit</code>, modo privado, asserções</td><td><code>pyarmor gen --obf-module 1 --obf-code 1 --enable jit --private --assert-call --assert-import</code></td></tr>
+    </table>
+    <div class="callout small">A licença <b>trial</b> do PyArmor recusa <code>--obf-code 2</code>, <code>--mix-str</code>, <code>--enable rft|bcc</code> (<i>out of license</i>). O nome “forte” identifica a combinação adicional testada. <code>--obf-module 1</code> e <code>--obf-code 1</code> já são o padrão.</div>
+    <p class="small mute" style="margin:0">Instalação: <code>pip install -r requirements.txt</code> (pyarmor 9.2.8, python-minifier 3.4.0). Cada máquina gera o próprio <code>ofuscado/&lt;id&gt;/</code>: o <i>runtime</i> depende de SO, arquitetura e versão do Python.</p>
+  </div>
+  <footer><span>Custo da ofuscação em Python</span><span>3</span></footer>
+  <div class="note">As opções obf-module e obf-code valem 1 por padrão na versão instalada. A configuração chamada forte acrescenta jit, modo privado e asserções. O nome não classifica sua resistência à análise.</div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <header>Método e ambiente</header>
+  <div class="body" style="gap:12px">
+    <ul class="small" style="font-size:22px">
+      <li><b>3 tamanhos</b> por benchmark, crescimento de pelo menos 50% entre tamanhos · <b>10 repetições</b> por caso, intercaladas</li>
+      <li>4 configurações × 3 tamanhos × 2 benchmarks × 10 = <b>240 execuções por máquina</b> (720 no total, todas com saída correta)</li>
+      <li>Matrizes: menor entrada do original ≥ 20 s (22,7–26,7 s). Palavras: <b>exceção aceita pelo professor</b> (mínimo só evita tempos desprezíveis; 3,1–4,2 s) (limitada pela RAM nas condições avaliadas)</li>
+      <li>Estatísticas: média, mediana, desvio, mín, máx · <b>slowdown</b> = média ofuscada ÷ média original, com IC 95% (bootstrap)</li>
+    </ul>
+    <table style="font-size:18px">
+      <tr><th></th><th>Pedro</th><th>Alex</th><th>Marcos</th></tr>
+      <tr><td>SO</td><td>Windows 10</td><td>Ubuntu 26.04</td><td>Fedora 44</td></tr>
+      <tr><td>CPU</td><td>i7-9700 (8c/8t)</td><td>Xeon E-2124 (4c/4t)</td><td>Ryzen 5 5500 (6c/12t)</td></tr>
+      <tr><td>RAM · Python</td><td>31,9 GiB · 3.12.15</td><td>30,6 GiB · 3.13.7</td><td>15,5 GiB · 3.14.10</td></tr>
+      <tr><td>Energia</td><td>alto desempenho</td><td>powersave + turbo</td><td>powersave</td></tr>
+      <tr><td>Matrizes n</td><td>560 · 840 · 1264</td><td>560 · 840 · 1264</td><td>608 · 912 · 1368</td></tr>
+    </table>
+    <p class="tiny mute" style="margin:0">Desktops, programas fechados, suspensão desativada, máquina parada. Frequência da CPU não monitorada. SO, CPU, Python e perfil mudam juntos: não dá para atribuir diferenças a uma causa só.</p>
+  </div>
+  <footer><span>Custo da ofuscação em Python</span><span>4</span></footer>
+  <div class="note">Os intervalos por bootstrap descrevem a incerteza das médias com dez repetições. Um intervalo que inclui 1,0 é compatível com ausência de diferença, mas não demonstra equivalência. A flexibilização de palavras veio da conversa do grupo com o professor.</div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <header>Tempo do original e tamanho da entrada</header>
+  <div class="body" style="gap:10px">
+    <div class="fig-wrap"><img src="fig/escalonamento.png" alt="Tempo do original versus tamanho em escala log-log"></div>
+    <ul class="small" style="font-size:21px">
+      <li>Matrizes: expoente medido <b>3,07–3,08</b> (esperado 3). Palavras: <b>1,00–1,02</b> (esperado 1).</li>
+      <li>Em matrizes, o tempo por iteração aumentou cerca de 6% entre os extremos. A medição não identifica a causa.</li>
+    </ul>
+  </div>
+  <footer><span>Custo da ofuscação em Python</span><span>5</span></footer>
+  <div class="note">O gráfico mostra o tempo dos originais em função do tamanho. Os expoentes ficam próximos de 3 em matrizes e de 1 em palavras.</div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <header>Resultado: slowdown por técnica, tamanho e máquina</header>
+  <div class="body" style="gap:10px">
+    <div class="fig-wrap"><img src="fig/slowdown.png" alt="Slowdown de cada configuração, com IC 95%"></div>
+    <p class="small" style="margin:0;font-size:20px">Linha tracejada = 1,0 (mesma média do original). Barras de erro = IC 95%. <b>Sem tendência uniforme de aumento</b> com o tamanho. Máximo observado: <b>1,083×</b>.</p>
+  </div>
+  <footer><span>Custo da ofuscação em Python</span><span>6</span></footer>
+  <div class="note">Cada painel apresenta um benchmark em uma máquina. As entradas testadas não mostram aumento uniforme do slowdown com o tamanho.</div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <header>Maior tamanho: slowdown [IC 95%]</header>
+  <div class="body" style="gap:10px">
+    <table style="font-size:19px">
+      <tr><th>benchmark</th><th>máquina</th><th class="n"><span class="tag c-min">minifier</span></th><th class="n"><span class="tag c-basic">pyarmor-básico</span></th><th class="n"><span class="tag c-strong">pyarmor-forte</span></th></tr>
+      <tr><td>matrizes</td><td>Pedro</td><td class="n">1,002 [0,987; 1,019]</td><td class="n sig">1,033 [1,022; 1,046]</td><td class="n sig">1,029 [1,017; 1,040]</td></tr>
+      <tr><td>matrizes</td><td>Alex</td><td class="n">1,004 [0,998; 1,010]</td><td class="n">0,999 [0,995; 1,002]</td><td class="n">0,999 [0,995; 1,003]</td></tr>
+      <tr><td>matrizes</td><td>Marcos</td><td class="n">0,997 [0,982; 1,009]</td><td class="n">1,014 [0,980; 1,058]</td><td class="n">0,992 [0,978; 1,004]</td></tr>
+      <tr><td>palavras</td><td>Pedro</td><td class="n">1,001 [0,971; 1,032]</td><td class="n sig">1,048 [1,020; 1,079]</td><td class="n sig">1,050 [1,018; 1,082]</td></tr>
+      <tr><td>palavras</td><td>Alex</td><td class="n sig">0,972 [0,954; 0,991]</td><td class="n">1,002 [0,982; 1,022]</td><td class="n">0,993 [0,975; 1,010]</td></tr>
+      <tr><td>palavras</td><td>Marcos</td><td class="n sig">0,962 [0,934; 0,988]</td><td class="n sig">0,968 [0,938; 0,996]</td><td class="n sig">0,973 [0,945; 0,999]</td></tr>
+    </table>
+    <p class="tiny mute" style="margin:0">Vermelho: IC não contém 1,0. Há médias acima e abaixo do original. Os intervalos são exploratórios, sem ajuste para várias comparações.</p>
+    <div class="cols" style="margin-top:4px">
+      <div class="card stat"><div class="big">≈ 1,00</div><div class="lbl">minifier: médias próximas às do original</div></div>
+      <div class="card stat"><div class="big">1,8–8,3%</div><div class="lbl">PyArmor no Pedro (10 de 12 casos com IC &gt; 1)</div></div>
+      <div class="card stat"><div class="big">2,8 p.p.</div><div class="lbl">maior diferença de slowdown entre básico e forte</div></div>
+    </div>
+  </div>
+  <footer><span>Custo da ofuscação em Python</span><span>7</span></footer>
+  <div class="note">Os aumentos com PyArmor são mais consistentes no Pedro. Não isolamos Windows, Python, CPU ou perfil de energia. As médias próximas do básico e do forte não demonstram equivalência.</div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <header>Ruído, outliers e inicialização</header>
+  <div class="body" style="gap:12px">
+    <div class="cols">
+      <div class="card"><h2>Outliers (Marcos)</h2>
+        <ul class="small" style="font-size:20px;padding-left:22px">
+          <li>PyArmor básico, n=1368: uma execução de <b>366,6 s</b> (mediana 312,0 s), desvio 20,6 s</li>
+          <li>PyArmor forte, n=912: uma de <b>114,3 s</b> (mediana 88,1 s)</li>
+          <li>Pelas <b>medianas</b>: slowdown 0,990 e 0,997</li>
+        </ul></div>
+      <div class="card"><h2>Inicialização × cálculo</h2>
+        <ul class="small" style="font-size:20px;padding-left:22px">
+          <li>Matrizes: médias de total − interno entre <b>0,06 e 0,22 s</b></li>
+          <li>Palavras: médias de <b>6 a 19 s</b>. Incluem a <b>construção do corpus</b> fora do cronômetro</li>
+        </ul></div>
+    </div>
+    <div class="callout">A variação depende do caso. Mantivemos todas as repetições e analisamos média, mediana, desvio, mínimo, máximo e intervalos.</div>
+    <p class="small mute" style="margin:0">A diferença total − interno não isola o custo de carregar o runtime ou de descriptografar o código.</p>
+  </div>
+  <footer><span>Custo da ofuscação em Python</span><span>8</span></footer>
+  <div class="note">As observações mais longas permanecem nos dados. A mediana e o desvio ajudam a interpretar a média. Tempo total menos interno inclui custos que não foram medidos separadamente.</div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <header>Regiões equivalentes: original × minifier</header>
+  <div class="body" style="gap:12px">
+    <div class="cols">
+<pre><b>original (src/matrizes.py)</b>
+import sys, time
+
+def matrix_mult(A, B, C, n):
+  for i in range(n):
+    for j in range(n):
+      for k in range(n):
+        C[i*n+j] += A[i*n+k]*B[k*n+j]
+
+def main():
+  ...
+  A = [1.0] * (n*n)
+  C = [0.0] * (n*n)</pre>
+<pre><b>minifier</b>
+C=print
+D=range
+import sys as B,time as E
+def <span class="hl">I</span>(A,B,C,n):
+ for E in D(n):
+  for F in D(n):
+   for G in D(n):C[E*n+F]+=A[E*n+G]*B[G*n+F]
+def <span class="hl">A</span>():
+  ...
+  J=[<span class="hl">1.</span>]*(A*A);F=[<span class="hl">.0</span>]*(A*A)</pre>
+    </div>
+    <ul class="small" style="font-size:21px">
+      <li><code>matrix_mult</code>→<code>I</code>, <code>main</code>→<code>A</code>; <code>range</code>/<code>print</code> viram apelidos globais; <code>1.0</code>→<code>1.</code></li>
+      <li><b>Laços e aritmética de índices intactos</b>: a lógica continua legível; arquivo de 1085 → 587 bytes</li>
+      <li>PyArmor: <code>matrizes.py</code> vira um <i>stub</i> de 8,7 KB (forte: 15,9 KB) + <i>runtime</i> nativo de ~640 kB no Pedro</li>
+    </ul>
+  </div>
+  <footer><span>Custo da ofuscação em Python</span><span>9</span></footer>
+  <div class="note">O minifier preserva a estrutura dos laços neste trecho e muda os identificadores. Os tamanhos de arquivos citados são da máquina do Pedro. Não fizemos comparação de bytecode.</div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <header>Dificuldades e decisões</header>
+  <div class="body" style="gap:8px">
+    <ul style="font-size:24px;line-height:1.34">
+      <li><b>PyArmor trial</b>: recusa recursos pagos (<i>out of license</i>); “forte” usa só o aceito.</li>
+      <li><b>Palavras &lt; 20 s</b>: chegar a 20 s exigiria ~234M–527M palavras (~34 GiB livres no Pedro). Um perfil de CPU a 1200 MHz foi preparado mas <b>não usado</b>; decisão: manter tamanhos + exceção do professor (piso de 1 s). A 1ª rodada do Pedro (28–29/10) foi descartada; a de 04–05/11 usa o pré-voo revisado.</li>
+      <li><b>Alex</b>: <code>pip</code> falhou por rede restrita; usou Python 3.13.7 (padrão do sistema é 3.14.4).</li>
+      <li><b>Marcos</b>: pré-voo de 03/11 reprovou o maior <i>palavras</i> por RAM livre (15,5 GiB); aprovado em 05/11 (pico 6,7 GiB). Matrizes 608/912/1368 por margem de 20 s.</li>
+      <li><b>Pedro</b>: aviso <code>Cache entry deserialization failed</code> no <code>pip</code>, sem impedir a execução.</li>
+      <li><b>Limites</b>: as máquinas diferem em várias variáveis. Os intervalos de incerteza variam entre os casos.</li>
+    </ul>
+  </div>
+  <footer><span>Custo da ofuscação em Python</span><span>10</span></footer>
+  <div class="note">As dificuldades incluem as restrições da licença trial, a memória em palavras e a preparação dos ambientes. As três rodadas atuais passaram na auditoria.</div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <header>Conclusões</header>
+  <div class="body" style="gap:18px">
+    <ul>
+      <li>O custo relativo não mostrou aumento uniforme com o tamanho nas entradas testadas.</li>
+      <li><b>Minifier</b>: médias próximas às do original. <b>PyArmor</b>: acréscimos mais consistentes no Pedro, com máximo de 8,3%.</li>
+      <li>Básico e forte tiveram médias próximas. CPU, SO e Python variaram juntos entre as máquinas.</li>
+    </ul>
+    <div class="callout">O experimento mede o <b>custo de tempo</b> da ofuscação. Não mede a resistência do código à engenharia reversa.</div>
+    <p class="small mute" style="margin:0">Dados, ofuscados, scripts e instruções acompanham a entrega.</p>
+  </div>
+  <footer><span>Custo da ofuscação em Python</span><span>11</span></footer>
+  <div class="note">O resultado se limita às configurações e entradas testadas. Medimos tempo de execução, sem medir a resistência à engenharia reversa.</div>
+</section>
+
+<!-- 12 -->
+<section class="slide title">
+  <h1>Perguntas?</h1>
+  <div class="rule"></div>
+  <p>Slides de apoio a seguir: média, mediana, desvio, mínimo e máximo de cada máquina.</p>
+  <div class="note">As tabelas e gráficos de apoio detalham as cinco estatísticas exigidas no enunciado.</div>
+</section>
+
+<!-- 13-15 backup -->
+<section class="slide">
+  <header>Apoio - Pedro (Windows 10, i7-9700)</header>
+  <div class="body"><div class="fig-wrap"><img src="fig/stats_pedro.png" alt="Estatísticas de Pedro"></div>
+  <p class="tiny mute" style="margin:0">Barra = média ± desvio · ◇ = mediana · traço fino = mín–máx · escala log.</p></div>
+  <footer><span>Apoio</span><span>13</span></footer>
+</section>
+<section class="slide">
+  <header>Apoio - Alex (Ubuntu 26.04, Xeon E-2124)</header>
+  <div class="body"><div class="fig-wrap"><img src="fig/stats_alex.png" alt="Estatísticas de Alex"></div>
+  <p class="tiny mute" style="margin:0">Barra = média ± desvio · ◇ = mediana · traço fino = mín–máx · escala log.</p></div>
+  <footer><span>Apoio</span><span>14</span></footer>
+</section>
+<section class="slide">
+  <header>Apoio - Marcos (Fedora 44, Ryzen 5 5500)</header>
+  <div class="body"><div class="fig-wrap"><img src="fig/stats_marcos.png" alt="Estatísticas de Marcos"></div>
+  <p class="tiny mute" style="margin:0">Barra = média ± desvio · ◇ = mediana · traço fino = mín–máx · escala log.</p></div>
+  <footer><span>Apoio</span><span>15</span></footer>
+</section>
+
+</div>
+<div id="notes"></div>
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide')), cur=0, stage=document.getElementById('stage'), notes=document.getElementById('notes');
+  function fit(){var s=Math.min(innerWidth/1024,innerHeight/768);stage.style.transform='translate(-50%,-50%) scale('+s+')';}
+  function show(i){
+    cur=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach(function(s,k){s.classList.toggle('active',k===cur);});
+    var n=slides[cur].querySelector('.note'); notes.textContent=n?n.textContent:'';
+    try{history.replaceState(null,'','#'+(cur+1));}catch(e){}
+  }
+  addEventListener('resize',fit); fit();
+  addEventListener('keydown',function(e){
+    var k=e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '||k==='Enter'){e.preventDefault();show(cur+1);}
+    else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){e.preventDefault();show(cur-1);}
+    else if(k==='Home')show(0); else if(k==='End')show(slides.length-1);
+    else if(k==='f'||k==='F'){if(!document.fullscreenElement)document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();else document.exitFullscreen();}
+    else if(k==='n'||k==='N'){notes.classList.toggle('on');}
+  });
+  addEventListener('click',function(e){show(e.clientX>innerWidth/2?cur+1:cur-1);});
+  var h=parseInt((location.hash||'').slice(1),10); show(isNaN(h)?0:h-1);
+})();
+</script>
+</body>
+</html>

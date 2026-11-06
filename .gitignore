@@ -26,3 +26,8 @@ Thumbs.db
 
 # Material da disciplina (não versionar PDFs de slides)
 *.pdf
+!relatorio/relatorio.pdf
+!relatorio/slides.pdf
+
+# Pacote local de entrega e cópias para montagem do ZIP
+/entrega/
